@@ -21,7 +21,7 @@ and manage permissions into your system.
 
 ## Running layers:
 
-### Physical Layer (C++)
+### Phsical Layer (C++)
 
 ### Transport Layer (Python)
 
