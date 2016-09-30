@@ -23,9 +23,15 @@ and manage permissions into your system.
 
 ### Phsical Layer (C++)
 
+
+
 ### Transport Layer (Python)
 
+still in the making
+
 ### Network Layer (PHP)
+
+still in the making
 
 ### Application Layer (Scala)
 
