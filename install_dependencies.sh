@@ -1,23 +1,36 @@
 #!/bin/bash
 
+
+#Coloring bash:
+R='\e[31m' #RED
+NC='\e[00;39m' #NO COLOR
+G='\e[32m' #GREEN
+B='\e[01;39m' #BOLD
+
+
 if (( $EUID != 0 )); then
     echo "Please, run as root!"
     exit
 fi
 
+function pause {
+    read -n1 -rsp $'Press any key to continue...\n'
+}
+
+
 # For Linux:
 
-echo "installing C++ environment for the Physical layer..."
+echo "${B}Installing C++ environment for the Physical layer... $NC"
 apt-get install build-essential
 
-echo "Installing PHP environment for the Network layer..."
+echo "${B}Installing PHP environment for the Network layer...$NC"
 apt-get install php5 apache2
 
-echo "Installing Python environment for the Transport layer..."
+echo "${B}Installing Python environment for the Transport layer...$NC"
 apt-get install python3
 
 
-echo "Installing Scala environment for the Transport layer..."
+echo "${B}Installing Scala environment for the Transport layer...$NC"
 add-apt-repository ppa:webupd8team/java
 apt-get update
 apt-get install oracle-java8-installer
@@ -30,18 +43,17 @@ dpkg -i scala-2.11.8.deb
 apt-get update
 apt-get install scala
 rm scala-2.11.8.deb
-echo "Scala installed successfully."
+echo "${B}Scala installed successfully.$NC"
 
 echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
 apt-get update
 apt-get install sbt
-echo "Scala-sbt installed successfully."
+echo "${B}Scala-sbt installed successfully.$NC"
 
-echo "Setting Scala environment..."
+echo "${B}Setting Scala environment...$NC"
 #export JAVA_HOME=/usr/local/java-current
 export $SCALA_HOME /usr/local/share/scala
 export $PATH $PATH:$SCALA_HOME/bin
-echo "Done."
-
+echo "${B}Done.$NC"
 
