@@ -133,9 +133,9 @@ int main(int argc, char *argv[])
     bzero(buffer,MIN_MSG_BUFF);
     size_t nbytes = fread(buffer, sizeof(char), MIN_MSG_BUFF, msgFile);
     while (nbytes > 0){
-        //createFrame(&frame, buffer, src_mac, dst_mac);
-        //sendFrame(&frame, sockfd, frameSize(&frame));
-        sendMessage(sockfd, buffer);
+        createFrame(&frame, buffer, src_mac, dst_mac);
+        sendFrame(&frame, sockfd, frameSize(&frame));
+        //sendMessage(sockfd, buffer);
         nbytes = fread(buffer, sizeof(char), MIN_MSG_BUFF, msgFile);
     }
     printf("File sent.\n");

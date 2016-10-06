@@ -95,10 +95,10 @@ int main(int argc, char *argv[])
     // Actually receiving and writing file:
     while(1) {
         bzero(buffer, MAX_BUF);
-        //receiveFrame(&frame, sockfd);
-        //size_t len = strlen(frame.data);
-        //strcpy(buffer, frame.data);
-        int len = read(sockfd, buffer, MAX_BUF);
+        receiveFrame(&frame, sockfd);
+        size_t len = strlen(frame.data);
+        strcpy(buffer, frame.data);
+        //int len = read(sockfd, buffer, MAX_BUF);
         printf("%d bytes received from client\n", (int) len);
         if ((int) len <= 0) break;
         else fwrite(buffer, sizeof(char), len, file);
