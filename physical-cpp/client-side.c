@@ -44,7 +44,7 @@
 
 
 
-int connectSocket(char *hostnameOrIp, char **src_mac, char **dst_mac){
+int connectSocket(char *hostnameOrIp, char src_mac[MAC_SIZE], char dst_mac[MAC_SIZE]){
     int sockfd; // socket file descriptor
     struct hostent *server;
     struct sockaddr_in serv_addr;
@@ -69,8 +69,14 @@ int connectSocket(char *hostnameOrIp, char **src_mac, char **dst_mac){
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
         error("ERROR connecting");
 
-    *src_mac = "abcdef";
-    *dst_mac = "abcdef";
+    // Cheating to get server's MAC addres
+    // THE CORRECT WAY IS USING ARP COMMAND.
+    char mac[7];
+    getMAC(mac);
+    mac[6] = '\0';
+    sendMessage(sockfd, mac);
+    receiveMessage(sockfd, mac);
+    strncpy(dst_mac, mac, 6);
 
     return sockfd;
 }
@@ -83,7 +89,7 @@ int main(int argc, char *argv[])
 {
 	long SIZE;
     int sockfd,  n;
-    char *hostnameOrIp, *src_mac, *dst_mac;
+    char *hostnameOrIp, src_mac[MAC_SIZE], dst_mac[MAC_SIZE];
     char *filename;
     struct Frame frame = {};
     char buffer[MAX_BUF];
@@ -97,7 +103,7 @@ int main(int argc, char *argv[])
     filename = argv[2];
 
 
-    sockfd = connectSocket(hostnameOrIp, &src_mac, &dst_mac);
+    sockfd = connectSocket(hostnameOrIp, src_mac, dst_mac);
 
     // Connection stabilished. Sending message requesting frame size:
     strcpy(buffer,"Yo, bro! What's the Frame size?");

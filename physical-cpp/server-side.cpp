@@ -8,21 +8,13 @@
 
 
 /*  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/sendfile.h>
-#include <netinet/in.h>
 
 #include "physical.h"
 
 
 
 
-int waitForClient(){
+int waitForClient(char this_mac[MAC_SIZE], char cli_mac[MAC_SIZE]){
     struct sockaddr_in serv_addr, cli_addr;
     int sockfd, newsockfd;
     socklen_t clilen;
@@ -45,6 +37,16 @@ int waitForClient(){
     newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,  &clilen);
     if (newsockfd < 0)
         error("ERROR on accept");
+
+    // Cheating to get client's MAC addres.
+    // THE CORRECT WAY IS USING ARP COMMAND.
+    char mac[7];
+    receiveMessage(newsockfd, mac);
+    strncpy(cli_mac, mac, 6);
+    getMAC(mac);
+    mac[6] = '\0';
+    sendMessage(newsockfd, mac);
+
     return newsockfd;
 }
 
@@ -56,10 +58,10 @@ int main(int argc, char *argv[])
 
     int  sockfd;
     char buffer[BUF_SIZ], filename[BUF_SIZ];
-    char *this_mac, *cli_mac;
+    char this_mac[MAC_SIZE], cli_mac[MAC_SIZE];
     struct Frame frame = {};
 
-    sockfd = waitForClient();
+    sockfd = waitForClient(this_mac, cli_mac);
 
 
     bzero(buffer,BUF_SIZ);
@@ -78,8 +80,8 @@ int main(int argc, char *argv[])
     printf("File Name should be %s\n", filename);
 
     // Sending OK message
-    this_mac = "abcdef";
-    cli_mac = "abcdef";
+    getMAC(this_mac);
+    getMAC(cli_mac);
     strcpy(buffer,"Ready to Transfer Files...");
     createFrame(&frame, buffer, this_mac, cli_mac);
     sendFrame(&frame, sockfd, frameSize(&frame));

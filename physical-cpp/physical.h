@@ -7,7 +7,26 @@
 
 
 
-// Para poder fazer if's com uma linha só:
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/sendfile.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
+#include <sys/ioctl.h>
+#include <linux/if_arp.h>
+
+
+
+
+
+
+// Just encapsulating a command to make if's in one single line:
 void error(const char *msg){
     perror(msg);
     exit(1);
@@ -19,13 +38,13 @@ void error(const char *msg){
 
 
 
+#define NETWORK_INTERFACE "eth0"
 
-
-#define MIN_MSG_BUFF 256
-#define MIN_MSG_SIZE 255
 #define PORT_NUMBER 8761
-#define MAX_BUF	    8191
-#define BUF_SIZ     8192
+#define MIN_MSG_BUFF 256
+#define MIN_MSG_SIZE MIN_MSG_BUFF - 1
+#define BUF_SIZ      576
+#define MAX_BUF	     BUF_SIZ - 1
 
 
 #define PREAMBLE_SIZE 8
@@ -56,7 +75,7 @@ size_t frameSize(struct Frame *frame){
 
 
 void createFrame(struct Frame *frame, char *message, char* src_mac, char* dst_mac){
-    strcpy (frame->preamble, "\x03\x21\x41\x3f\x04\x21\x41\x3f"); // pre-defined preamble.
+    strcpy (frame->preamble, "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xab"); // pre-defined preamble.
     strcpy (frame->sourceMAC, src_mac);
     strcpy (frame->destinationMAC, dst_mac);
     strcpy (frame->ethernetType, "\x08\x00"); // type of protocol - 0x0800 for IPv4
@@ -65,15 +84,30 @@ void createFrame(struct Frame *frame, char *message, char* src_mac, char* dst_ma
 }
 
 
+void bytesToStr(char *p, char *d, size_t len){
+    char * ptr = d;
+    ptr+=sprintf(ptr, "[");
+    for (int i = 0; i < len-1; ++i)
+        ptr+=sprintf(ptr,"%02x:",(unsigned char) p[i]);
+    ptr+=sprintf(ptr,"%02x",(unsigned char)p[len-1]);
+    ptr+=sprintf(ptr, "]");
+    *(ptr + 1) = '\0';
+}
 
 
 void printFrame(struct Frame *frame){
-    printf("Frame:\n\tpreamble: %s\n",frame->preamble);
-    printf("\tsourceMAC: %s\n",frame->sourceMAC);
-    printf("\tdestinationMAC: %s\n",frame->destinationMAC);
-    printf("\tethernetType: %s\n",frame->ethernetType);
-    printf("\tdata: %s\n",frame->data);
-    printf("\tchecksum: %s\n",frame->checksum);
+    char aux[50];
+    bytesToStr(frame->preamble, aux, PREAMBLE_SIZE );
+    printf("Frame:\n\tpreamble: %s\n",aux);
+    bytesToStr(frame->sourceMAC, aux, MAC_SIZE );
+    printf("\tsourceMAC: %s\n",aux);
+    bytesToStr(frame->destinationMAC, aux, MAC_SIZE );
+    printf("\tdestinationMAC: %s\n",aux);
+    bytesToStr(frame->ethernetType, aux, PROTOCOL_SIZE );
+    printf("\tethernetType: %s\n",aux);
+    printf("\tdata: [%s]\n",frame->data);
+    bytesToStr(frame->checksum, aux, CHECKSUM_SIZE );
+    printf("\tchecksum: %s\n",aux);
 }
 
 void receiveFrame(struct Frame *frame, int sockfd){
@@ -82,12 +116,18 @@ void receiveFrame(struct Frame *frame, int sockfd){
     int n = read(sockfd,buffer,MAX_BUF);
     if (n<0)
         error("Could not read from socket");
+    int offset = 0;
     strncpy (frame->preamble, buffer, PREAMBLE_SIZE);
-    strncpy (frame->sourceMAC, buffer+8, MAC_SIZE);
-    strncpy (frame->destinationMAC, buffer+14, MAC_SIZE);
-    strncpy (frame->ethernetType, buffer+20, PROTOCOL_SIZE);
-    strncpy (frame->data, buffer+22, MAX_DATA_SIZE);
-    strncpy (frame->checksum, buffer, CHECKSUM_SIZE);
+    offset += PREAMBLE_SIZE;
+    strncpy (frame->sourceMAC, buffer+offset, MAC_SIZE);
+    offset += MAC_SIZE;
+    strncpy (frame->destinationMAC, buffer+offset, MAC_SIZE);
+    offset += MAC_SIZE;
+    strncpy (frame->ethernetType, buffer+offset, PROTOCOL_SIZE);
+    offset += PROTOCOL_SIZE;
+    strncpy (frame->data, buffer+offset, MAX_DATA_SIZE);
+    offset = strlen(buffer) - CHECKSUM_SIZE;
+    strncpy (frame->checksum, buffer+offset, CHECKSUM_SIZE);
     printf("Frame Received!!! (%d bytes) \n", (int) n);
     printFrame(frame);
 }
@@ -138,6 +178,24 @@ void receiveMessage(int sockfd, char *msg){
 
 
 
+
+
+
+
+
+void getMAC(char mac[MAC_SIZE]){
+    int s;
+    struct ifreq buffer;
+
+    s = socket(PF_INET, SOCK_DGRAM, 0);
+    memset(&buffer, 0x00, sizeof(buffer));
+    strcpy(buffer.ifr_name, NETWORK_INTERFACE);
+    ioctl(s, SIOCGIFHWADDR, &buffer);
+    close(s);
+
+    for( s = 0; s < 6; s++ )
+        mac[s] = (char) buffer.ifr_hwaddr.sa_data[s];
+}
 
 
 
