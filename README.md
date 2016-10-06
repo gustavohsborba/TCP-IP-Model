@@ -8,7 +8,7 @@ proposed by Sandro Renato Dias <https://sites.google.com/site/sandrord>
 Development group:
 * [Gustavo Borba](https://github.com/gustavohsborba)  [gustavohsborba@gmail.com]
 * [Bruno Maciel]()  [bmarques.maciel@gmail.com]
-* [Thiago Alexandre]()  [thiagoalexsilva93@gmail.com]
+* [Thiago Alexandre](https://github.com/thiagoalexsilva)  [thiagoalexsilva93@gmail.com]
 * [Ana Claudia](https://github.com/gmanaclaudia)  [gmanaclaudia@gmail.com]
 
 
@@ -21,9 +21,24 @@ and manage permissions into your system.
 
 ## Running layers:
 
-### Phsical Layer (C++)
+### Phsycal Layer (C++)
 
+To compile physical layer, just go to it's folder and run the following command:
+```shell
+g++ -o server server-side.cpp && g++ -o client client-side.c
+```
+Now you have a client and a server executables. 
 
+To start them, first execute the server:
+```shell
+./server
+```
+Then execute the client. The client needs two arguments:
+1. server IP or hostname
+2. filename to transfer
+```shell
+./client 127.0.0.1 datagram.txt
+```
 
 ### Transport Layer (Python)
 
