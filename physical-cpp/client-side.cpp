@@ -4,118 +4,16 @@
  * possibly, the following too: http://www.dicas-l.com.br/arquivo/programando_socket_em_c++_sem_segredo.php#.V9lODHUrLDc
  */
 
-//#include<bits/stdc++.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-
-#include <pthread.h>
-#include <time.h>
-
-
-/* sockaddr_in is defined in netinet/in.h:
- * struct sockaddr_in {
- *     short   sin_family; // must be AF_INET
- *     u_short sin_port;
- *     struct  in_addr sin_addr;
- *     char    sin_zero[8]; // Not used, must be zero
- * };
- */
-
- /*class Frame{
-    	unsigned char sourceMAC[6]; // source's MAC address (6 octets)
-    	unsigned char destinationMAC[6]; // destination's MAC address (6 octets)
-    	unsigned char protocol[2]; // type of protocol - 0x0800 for IPv4
-    	unsigned char data[1002]; // 1006 bytes limit for data
-    	unsigned char checksum[8]; // to check for transmission errors
-    public:
-        Frame(char src_mac[], char dst_mac[], char message[]) {
-        	strcpy(sourceMAC, src_mac);
-        	strcpy(destinationMAC, dst_mac);
-        	strcpy(protocol, "\x08\x00");
-        	sprintf(data, "%-494s", message);
-        	strcpy(checksum, "\x00\x20\x20\x3a");
-        }
-        ~Frame()
-};*/
 
 
 
-#define PORT_F		65111
-#define PORT_REQ	65002
-#define MAX_BUF		8192
-
-
-
-// Para poder fazer if's com uma linha só:
-void error(char *msg){
-    perror(msg);
-    exit(1);
-}
-
-
-
-int main(int argc, char * argv[]){
-    
-    struct sockaddr_in  readSocket, localSocket; // sockets to connect
-    int localSocketfd, readSocketfd; // sockets' file descriptors
-    
-    int portno, n, bindStatus;
-    char buffer[MAX_BUF], raw[MAX_BUF],rawrequest[MAX_BUF],*temp,*response;
-    char *ip, n[20];
-    FILE *arq;
-
-
-    // Initializing socket to stabilish connection:
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-        error("ERROR opening socket");
-    bzero(&localSocket,sizeof(localSocket)); // Fill socket with zeroes
-    localSocket.sin_family=AF_INET;
-	localSocket.sin_addr.s_addr=INADDR_ANY;
-	localSocket.sin_port=htons(PORT_REQ);
-
-	// Binding socket to it's address.
-	bindStatus = bind(localSocketfd, (struct sockaddr *) &localSocket, sizeof(localSocket))
-	if( bindStatus < 0){
-	    if(localSocketfd >= 0)
-	        close(localSocketfd);
-	    error("Error binding local socket.");
-	}
-
-
-	while(1){
-
-	    // waiting socket to receive frame:
-        printf("Listening...\n");
-		listen(localSocketfd,5);
-		readSocketfd=accept(localSocketfd, (struct sockaddr *) &readSocket, &sizeof(readSocket));
-		if(readSocketfd < 0)
-			error("Error receiving local socket");
-		printf("socket received!\n");
-
-        bzero(&buffer,sizeof(buffer)); // cleaning buffer before reading
-        bread = recv(readSocketfd,buffer,MAX_BUF,0) <= 0; 
-
-        printf("request: %s\n",buffer);
-		strcpy(rawrequest,buffer);
-
-
-	}
-	printf("\nConnection closed.\n\n");
-
-
-/* 
+/*
   Camada Física:
-  
-  
+
+
   Recebe arquivo
   Transforma em binário
-  
+
   Conectar socket
   Recebe a quantidade de bits
   Envia em pacotes da sugerida quantidade
@@ -125,33 +23,136 @@ int main(int argc, char * argv[]){
 */
 
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/sendfile.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
-    // A partir daqui, não sabemos o que estamos fazendo...
+#include <sys/ioctl.h>
+#include <linux/if_arp.h>
+
+#include <pthread.h>
+#include <time.h>
+
+#include "physical.h"
 
 
-    server = gethostbyname(argv[1]);
-    if (server == NULL) {
-        fprintf(stderr,"ERROR, no such host\n");
-        exit(0);
-    }
-    bzero((char *) &serverSocket, sizeof(serverSocket));
-    serverSocket.sin_family = AF_INET;
-    bcopy((char *)server->h_addr,
-         (char *)&serverSocket.sin_addr.s_addr,
-         server->h_length);
-    serverSocket.sin_port = htons(portno);
-    if (connect(sockfd,(struct sockaddr *) &serverSocket,sizeof(serverSocket)) < 0)
+
+int connectSocket(char *hostnameOrIp, char **src_mac, char **dst_mac){
+    int sockfd; // socket file descriptor
+    struct hostent *server;
+    struct sockaddr_in serv_addr;
+    struct ifreq ifr;
+
+    // Opening socket to start connection:
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0)
+        error("ERROR opening socket");
+    // resolving host:
+    server = gethostbyname(hostnameOrIp);
+    if (server == NULL)
+        error("ERROR, no such host\n");
+    bzero((char *) &serv_addr, sizeof(serv_addr)); // cleans serv_addr
+
+    // configuring and connecting socket:
+    serv_addr.sin_family = AF_INET;
+    bcopy( (char *)server->h_addr,
+           (char *)&serv_addr.sin_addr.s_addr,
+           server->h_length);
+    serv_addr.sin_port = htons(PORT_NUMBER);
+    if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
         error("ERROR connecting");
-    printf("Please enter the message: ");
-    bzero(buffer,256);
-    fgets(buffer,255,stdin);
-    n = write(sockfd,buffer,strlen(buffer));
-    if (n < 0)
-         error("ERROR writing to socket");
-    bzero(buffer,256);
 
+    *src_mac = "abcdef";
+    *dst_mac = "abcdef";
 
-
+    return sockfd;
 }
 
-using namespace std;
+
+
+
+
+int main(int argc, char *argv[])
+{
+	long SIZE;
+    int sockfd,  n;
+    char *hostnameOrIp, *src_mac, *dst_mac;
+    char *filename;
+    struct Frame frame = {};
+    char buffer[MAX_BUF];
+
+
+    if (argc < 2) {
+       fprintf(stderr,"usage %s IP_or_hostname filename\n", argv[0]);
+       exit(0);
+    }
+    hostnameOrIp = argv[1];
+    filename = argv[2];
+
+
+    sockfd = connectSocket(hostnameOrIp, &src_mac, &dst_mac);
+
+    // Connection stabilished. Sending message requesting frame size:
+    strcpy(buffer,"Yo, bro! What's the Frame size?");
+    sendMessage(sockfd, buffer);
+
+    // Reading message from server:
+    receiveMessage(sockfd, buffer);
+    printf("Message size: %s\n", buffer);
+    SIZE = strtol (buffer,NULL,10);
+
+
+    // with socket size negotiated, send filename:
+    strcpy(buffer,filename);
+    createFrame(&frame, buffer, src_mac, dst_mac);
+    sendFrame(&frame, sockfd, frameSize(&frame));
+
+    // And receiving confirmation:
+    receiveFrame(&frame, sockfd);
+    strcpy(buffer, frame.data);
+    printf("Return from server: %s (%d bytes)\n", buffer, (int) frameSize(&frame));
+
+
+    // Opening message file to read bytes and send them:
+    FILE* msgFile;
+    msgFile = fopen(filename,"rb");
+    int msgFd = fileno(msgFile);
+    if( !msgFile | msgFd < 0)
+    	error("File doesn't exist");
+
+    // Finally, Sending files:
+    int i = 0;
+    int c;
+    bzero(buffer,MIN_MSG_BUFF);
+    size_t nbytes = fread(buffer, sizeof(char), MIN_MSG_BUFF, msgFile);
+    while (nbytes > 0){
+        //createFrame(&frame, buffer, src_mac, dst_mac);
+        //sendFrame(&frame, sockfd, frameSize(&frame));
+        sendMessage(sockfd, buffer);
+        nbytes = fread(buffer, sizeof(char), MIN_MSG_BUFF, msgFile);
+    }
+    printf("File sent.\n");
+
+    fclose(msgFile);
+    close(sockfd);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
