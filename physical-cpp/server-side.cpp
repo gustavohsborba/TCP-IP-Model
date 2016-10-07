@@ -40,13 +40,13 @@ int waitForClient(char this_mac[MAC_SIZE], char cli_mac[MAC_SIZE]){
 
     // Cheating to get client's MAC addres.
     // THE CORRECT WAY IS USING ARP COMMAND.
-    char mac[7];
+    /*char mac[7];
     receiveMessage(newsockfd, mac);
     strncpy(cli_mac, mac, 6);
     getMAC(mac);
     mac[6] = '\0';
     sendMessage(newsockfd, mac);
-
+	*/
     return newsockfd;
 }
 

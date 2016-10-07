@@ -21,7 +21,7 @@ and manage permissions into your system.
 
 ## Running layers:
 
-### Phsycal Layer (C++)
+### Physical Layer (C++)
 
 To compile physical layer, just go to it's folder and run the following command:
 ```shell
@@ -39,6 +39,9 @@ Then execute the client. The client needs two arguments:
 ```shell
 ./client 127.0.0.1 datagram.txt
 ```
+
+Primeiro foi implementado um frame (da camada de enlace). Após o início da comunicação do socket, encontramos o MAC address do servidor e o cliente pergunta o tamanho do frame. Quando o servidor responde, o cliente começa a enviar um arquivo dividido em pacotes do tamanho certo para o servidor.
+
 
 ### Transport Layer (Python)
 
