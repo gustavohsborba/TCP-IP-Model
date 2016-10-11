@@ -3,6 +3,7 @@ import java.io.FileInputStream
 import java.io.DataOutputStream
 import java.net.ServerSocket
 import java.net.InetAddress
+import java.io.FileNotFoundException
 import scala.io._
 
 
@@ -28,7 +29,7 @@ while (true) {
     val in = new BufferedSource(sock.getInputStream()).getLines()
     val firstLine = in.next().split("\\s+"); 
     val method = firstLine(0); // GET or POST
-    val fileName = firstLine(1).substring(1); // substring removes the first "/" character
+    var fileName = firstLine(1).substring(1); // substring removes the first "/" character
     val protocolVersion = firstLine(2); // HTTP/1.1
 
     // We are interested just in the first line.
@@ -36,12 +37,21 @@ while (true) {
     //if ( !(in.next() == "Send"))  
     	//error("this is not the client we're looking for!");
     
-	var arq = new File(fileName)
-
-	if (!arq.isFile())
-		error("\n404: Internal Server Error - File not Found");
+    // Tries to open requested file. If fail, prepares to send a 404 page:
+    var arq : File = new File("404.html");
+    try {
+		arq = new File(fileName)
+		if (!arq.isFile())
+			throw new FileNotFoundException;
+	} catch{
+		case ex: FileNotFoundException => {
+			fileName = "404.html"
+			arq = new File(fileName);
+		} 	
+	}	
 	
-	var statusLine = method + " 200 OK" + "\r\n"
+	// Builds the message:
+	var statusLine = protocolVersion + " 200 OK" + "\r\n"
 	var serverdetails = "Server: Scala HTTPServer"
 	//var contentLengthLine = "Content-Length: " + Integer.toString(fin.available()) + "\r\n"
 	var contentTypeLine = "Content-Type: text/html" + "\r\n"
