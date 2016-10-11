@@ -37,16 +37,25 @@ apt-get install oracle-java8-installer
 apt-get install oracle-java8-set-default
 echo "Java installed successfully."
 
-wget http://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
-wget http://www.scala-lang.org/files/archive/scala-2.11.8.deb
+
+if [! -f 'scala-2.11.8.tgz']; then
+    wget http://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
+fi
+
+if [! -f 'scala-2.11.8.deb']; then
+    wget http://www.scala-lang.org/files/archive/scala-2.11.8.deb
+fi 
 dpkg -i scala-2.11.8.deb
 apt-get update
 apt-get install scala
 rm scala-2.11.8.deb
+rm scala-2.11.8.*
 echo "${B}Scala installed successfully.$NC"
 
-echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+if [! -f '/etc/apt/sources.list.d/sbt.list']; then
+	echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+fi 
 apt-get update
 apt-get install sbt
 echo "${B}Scala-sbt installed successfully.$NC"
