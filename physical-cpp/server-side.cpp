@@ -40,13 +40,17 @@ int waitForClient(char this_mac[MAC_SIZE], char cli_mac[MAC_SIZE]){
 
     // Cheating to get client's MAC addres.
     // THE CORRECT WAY IS USING ARP COMMAND.
-    /*char mac[7];
+    char mac[10];
+    char buffer[30];
+    bzero(mac,10);
     receiveMessage(newsockfd, mac);
     strncpy(cli_mac, mac, 6);
     getMAC(mac);
+    bytesToStr(mac, buffer, 6);
     mac[6] = '\0';
     sendMessage(newsockfd, mac);
-	*/
+    strncpy(this_mac, mac, 6);
+	
     return newsockfd;
 }
 
@@ -96,12 +100,11 @@ int main(int argc, char *argv[])
 
     // Actually receiving and writing file:
     while(1) {
-        bzero(buffer, MAX_BUF);
+        bzero(buffer, BUF_SIZ);
         receiveFrame(&frame, sockfd);
-        size_t len = strlen(frame.data);
-        strcpy(buffer, frame.data);
-        //int len = read(sockfd, buffer, MAX_BUF);
-        printf("%d bytes received from client\n", (int) len);
+        getData(&frame, buffer);
+        size_t len = strlen(buffer);
+        printf("Message of %d bytes received from client\n\n", (int) len);
         if ((int) len <= 0) break;
         else fwrite(buffer, sizeof(char), len, file);
     }

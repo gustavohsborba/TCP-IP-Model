@@ -3,14 +3,13 @@ import java.io._
 import scala.io._
 
 
-val clientPort = 8080
 val serverPort = 8081
+val clientPort = 63050
+val networkPort = 63051
 val clientAddress = "127.0.0.1"
 val serverAddress = "127.0.0.1"
 
 val socketAplicacao = new ServerSocket(clientPort)
-
-printf("Servidor escutando na porta %1$d", clientPort)
 
 while (true) {
 	//Recebendo da aplicacao
@@ -18,7 +17,7 @@ while (true) {
   var outAplicacao = new DataOutputStream(sAplicacao.getOutputStream())
     
   //Estabelecendo conexao com o servidor
-  val sServidor = new Socket(InetAddress.getByName(serverAddress), serverPort)
+  val sServidor = new Socket(InetAddress.getByName(serverAddress), networkPort)
 	val outServidor = new PrintStream(sServidor.getOutputStream())
 
 	//Enviando requisicao ao servidor

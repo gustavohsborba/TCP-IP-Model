@@ -22,24 +22,6 @@
 
 */
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/sendfile.h>
-#include <netinet/in.h>
-#include <netdb.h>
-
-#include <sys/ioctl.h>
-#include <linux/if_arp.h>
-
-#include <pthread.h>
-#include <time.h>
-
 #include "physical.h"
 
 
@@ -71,13 +53,15 @@ int connectSocket(char *hostnameOrIp, char src_mac[MAC_SIZE], char dst_mac[MAC_S
 
     // Cheating to get server's MAC addres
     // THE CORRECT WAY IS USING ARP COMMAND.
-    /*char mac[7];
+    char mac[10];
+    bzero(mac,10);
     getMAC(mac);
     mac[6] = '\0';
     sendMessage(sockfd, mac);
+    strncpy(src_mac, mac, 6);
     receiveMessage(sockfd, mac);
     strncpy(dst_mac, mac, 6);
-	*/
+	
     return sockfd;
 }
 
@@ -92,7 +76,7 @@ int main(int argc, char *argv[])
     char *hostnameOrIp, src_mac[MAC_SIZE], dst_mac[MAC_SIZE];
     char *filename;
     struct Frame frame = {};
-    char buffer[MAX_BUF];
+    char buffer[BUF_SIZ];
 
 
     if (argc < 2) {
@@ -136,13 +120,14 @@ int main(int argc, char *argv[])
     // Finally, Sending files:
     int i = 0;
     int c;
-    bzero(buffer,MIN_MSG_BUFF);
-    size_t nbytes = fread(buffer, sizeof(char), MIN_MSG_BUFF, msgFile);
+    bzero(buffer,BUF_SIZ);
+    size_t nbytes = fread(buffer, sizeof(char), MAX_DATA_SIZE-1, msgFile);
     while (nbytes > 0){
         createFrame(&frame, buffer, src_mac, dst_mac);
+        printf("\nsending message of %d bytes to server...\n", strlen(frame.data));
         sendFrame(&frame, sockfd, frameSize(&frame));
-        //sendMessage(sockfd, buffer);
-        nbytes = fread(buffer, sizeof(char), MIN_MSG_BUFF, msgFile);
+        bzero(buffer,BUF_SIZ);
+        nbytes = fread(buffer, sizeof(char), MAX_DATA_SIZE, msgFile);
     }
     printf("File sent.\n");
 

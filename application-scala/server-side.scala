@@ -13,18 +13,19 @@ def error( message : String){
 	System.exit(0);
 }
 
-
-var port = 8081
+var serverPort = 63040
+var networkPort = 63041 // Network layer port
+var port = 8081 // Application port
 
 
 
 // Backlog: 100 - The maximum queue length for incoming connection 
 // indications (a request to connect) is set to the backlog parameter.
-var listener = new ServerSocket(port, 100, InetAddress.getByName("127.0.0.1")); 
-printf("\nServidor escutando na porta %1$d", port)
+var listener = new ServerSocket(networkPort, 100, InetAddress.getByName("127.0.0.1")); 
+printf("\nServidor escutando na porta %1$d", networkPort)
  
 
- 
+
 
 while (true) {
     var sock = listener.accept()
