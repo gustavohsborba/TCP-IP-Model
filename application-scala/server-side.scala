@@ -28,23 +28,24 @@ printf("\nServidor escutando na porta %1$d", networkPort)
 
 
 while (true) {
-    var sock = listener.accept()
-    
-    try {
-    	//Receiving request
-	    // We are interested just in the first line of the protocol
-		val in = new BufferedSource(sock.getInputStream()).getLines()
-	    val firstLine = in.next().split("\\s+"); 
-	    val method = firstLine(0); // GET or POST
-	    var fileName = firstLine(1).substring(1); // substring removes the first "/" character
-	    val protocolVersion = firstLine(2); // HTTP/1.1
-	    //while(in.hasNext) printf("\n"+in.next());
-	    
+	var sock = listener.accept()
 
-	    // Tries to open requested file. If fail, prepares to send a 404 page:
-	    var arq : File = new File("404.html");
-	    try {
-	    	if(fileName=="") fileName = "index.html";
+	try {
+		//Receiving request
+		// We are interested just in the first line of the protocol
+		val in = new BufferedSource(sock.getInputStream()).getLines()
+		val firstLine = in.next().split("\\s+"); 
+		val method = firstLine(0); // GET or POST
+		var fileName = firstLine(1).substring(1); // substring removes the first "/" character
+		val protocolVersion = firstLine(2); // HTTP/1.1
+		//while(in.hasNext) printf("\n"+in.next());
+
+
+		// Tries to open requested file. If fail, prepares to send a 404 page:
+		var arq : File = new File("404.html");
+		try {
+			if(fileName=="") 
+				fileName = "index.html";
 			arq = new File(fileName)
 			if (!arq.isFile())
 				throw new FileNotFoundException;
@@ -60,26 +61,26 @@ while (true) {
 				arq = new File(fileName);
 			}
 		}	
-	  	var fin = new FileInputStream(fileName)
-		
+		var fin = new FileInputStream(fileName)
+
 
 		// Builds the message:
 		var statusLine = protocolVersion + " 200 OK" + "\r\n";
 		var serverdetails = "Server: Scala HTTPServer";
 		var contentLengthLine = "Content-Length: " + Integer.toString(fin.available()) + "\r\n";
 		var contentTypeLine = "Content-Type: " + "text/html" + "\r\n";
-				//((fileName.endsWith(".htm") || fileName.endsWith(".html"))? "text/html" : "") + 
+		//((fileName.endsWith(".htm") || fileName.endsWith(".html"))? "text/html" : "") + 
 
 
 		// Sending webpage to client:
-	    var outToClient = new DataOutputStream(sock.getOutputStream())
+		var outToClient = new DataOutputStream(sock.getOutputStream())
 		outToClient.writeBytes(statusLine)
 		outToClient.writeBytes(serverdetails)
 		outToClient.writeBytes(contentTypeLine)
 		outToClient.writeBytes(contentLengthLine)
 		outToClient.writeBytes("Connection: close\r\n")
 		outToClient.writeBytes("\r\n")
-		
+
 		/*var length = arq.length.toInt
 		var buffer = Array.fill[Byte](length)(0)
 		outToClient.write(buffer, 0, buffer.length)*/
@@ -93,13 +94,13 @@ while (true) {
 
 		fin.close()	
 		outToClient.close()
-	    sock.close()
+		sock.close()
 
-	    println("\nRequest for " + fileName + " fulfilled");
+		println("\nRequest for " + fileName + " fulfilled");
 
-    } catch {
-    	case ex : NoSuchElementException => {}
-    }
+	} catch {
+		case ex : NoSuchElementException => {}
+	}
 }
 
 listener.close()
