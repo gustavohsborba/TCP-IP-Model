@@ -21,8 +21,8 @@ var port = 8081 // Application port
 
 // Backlog: 100 - The maximum queue length for incoming connection 
 // indications (a request to connect) is set to the backlog parameter.
-var listener = new ServerSocket(networkPort, 100, InetAddress.getByName("127.0.0.1")); 
-printf("\nServidor escutando na porta %1$d", networkPort)
+var listener = new ServerSocket(port, 100, InetAddress.getByName("127.0.0.1")); 
+printf("\nServidor escutando na porta %1$d", port)
  
 
 

@@ -17,7 +17,7 @@ while (true) {
 	var outAplicacao = new DataOutputStream(sAplicacao.getOutputStream())
 
 	//Estabelecendo conexao com o servidor
-	val sServidor = new Socket(InetAddress.getByName(serverAddress), networkPort)
+	val sServidor = new Socket(InetAddress.getByName(serverAddress), serverPort)
 	val outServidor = new PrintStream(sServidor.getOutputStream())
 
 	//Enviando requisicao ao servidor
