@@ -31,14 +31,44 @@ while (true) {
 	var sock = listener.accept()
 
 	try {
+	
+	/* PARA PROBLEMA AO ATUALIZAR
+		var lastReqFile = new File("last.txt")
+		if (requisitionFile == null) {
+			var writer = new PrintWriter("requisition.txt", "UTF-8")
+    		writer.println("1")
+    		writer.close()
+    	}
+    	else {
+    		val inAux = new BufferedSource(new FileInputStream(lastReqFile)).getLines()
+			val firstLineAux = inAux.next().split("\\s+")
+			var requisitionFile = new File("requisition.txt")
+			// e dai fazer verificacao de numeros e tirar o delete
+    	}
+    	
+    	*/
+	
+		var requisitionFile = new File("requisition.txt")
+		/*while (requisitionFile == null)
+			requisitionFile = new File("requisition.txt")*/
+		/*
+		var command = "sudo ./clientExeC localhost requisition.txt"
+		var p  = Runtime.getRuntime().exec(command)
+		p.waitFor()
+		*/	
+	
 		//Receiving request
 		// We are interested just in the first line of the protocol
-		val in = new BufferedSource(sock.getInputStream()).getLines()
+		//val in = new BufferedSource(sock.getInputStream()).getLines()
+		
+		val in = new BufferedSource(new FileInputStream(requisitionFile)).getLines()
 		val firstLine = in.next().split("\\s+"); 
 		val method = firstLine(0); // GET or POST
 		var fileName = firstLine(1).substring(1); // substring removes the first "/" character
 		val protocolVersion = firstLine(2); // HTTP/1.1
 		//while(in.hasNext) printf("\n"+in.next());
+		
+		requisitionFile.delete()
 
 
 		// Tries to open requested file. If fail, prepares to send a 404 page:

@@ -12,6 +12,7 @@ val serverAddress = "127.0.0.1"
 val socketAplicacao = new ServerSocket(clientPort)
 
 while (true) {
+
 	//Recebendo da aplicacao
 	val sAplicacao = socketAplicacao.accept()
 	var outAplicacao = new DataOutputStream(sAplicacao.getOutputStream())
@@ -20,10 +21,16 @@ while (true) {
 	val sServidor = new Socket(InetAddress.getByName(serverAddress), serverPort)
 	val outServidor = new PrintStream(sServidor.getOutputStream())
 
+	/*
 	//Enviando requisicao ao servidor
 	outServidor.println("GET /index.html HTTP/1.1")
 	outServidor.flush()
-
+	*/
+	
+	var writer = new PrintWriter("requisition.txt", "UTF-8")
+    writer.println("GET /index.html HTTP/1.1")
+    writer.close()
+    
 	// Recebendo página:
 	var inServidor = sServidor.getInputStream();
 	var length = 1000
@@ -32,6 +39,9 @@ while (true) {
 	while ({count = inServidor.read(buffer); count > 0}) {
 		outAplicacao.write(buffer, 0, count);
 	}
+	
+	//var requisitionFile = new File("requisition.txt")
+	//if (requisitionFile != null) requisitionFile.delete()
 
 	// Fechando sockets e streams:
 	inServidor.close()
