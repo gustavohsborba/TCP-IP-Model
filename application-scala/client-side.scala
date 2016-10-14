@@ -1,6 +1,7 @@
 import java.net._
 import java.io._
 import scala.io._
+import scala.sys.process._
 
 
 val serverPort = 8081
@@ -9,47 +10,23 @@ val networkPort = 63051
 val clientAddress = "127.0.0.1"
 val serverAddress = "127.0.0.1"
 
-val socketAplicacao = new ServerSocket(clientPort)
 
-while (true) {
+// Escrevendo a requisição para a camada física utilizar:
+var writer = new PrintWriter("request.txt", "UTF-8")
+writer.println("GET /index.html HTTP/1.1")
+writer.close()
 
-	//Recebendo da aplicacao
-	val sAplicacao = socketAplicacao.accept()
-	var outAplicacao = new DataOutputStream(sAplicacao.getOutputStream())
+// Enviando para a camada física:
+val command = "./physical-client "+serverAddress + " request.txt"
+Process(command)!
+new File("request.txt").delete()
 
-	//Estabelecendo conexao com o servidor
-	val sServidor = new Socket(InetAddress.getByName(serverAddress), serverPort)
-	val outServidor = new PrintStream(sServidor.getOutputStream())
-
-	/*
-	//Enviando requisicao ao servidor
-	outServidor.println("GET /index.html HTTP/1.1")
-	outServidor.flush()
-	*/
-	
-	var writer = new PrintWriter("requisition.txt", "UTF-8")
-    writer.println("GET /index.html HTTP/1.1")
-    writer.close()
-    
-	// Recebendo página:
-	var inServidor = sServidor.getInputStream();
-	var length = 1000
-	var buffer = Array.fill[Byte](length)(0)
-	var count = 0;
-	while ({count = inServidor.read(buffer); count > 0}) {
-		outAplicacao.write(buffer, 0, count);
-	}
-	
-	//var requisitionFile = new File("requisition.txt")
-	//if (requisitionFile != null) requisitionFile.delete()
-
-	// Fechando sockets e streams:
-	inServidor.close()
-	outServidor.close()
-	outAplicacao.close()
-
-	sServidor.close()
-	sAplicacao.close()
+// Recebendo e imprimindo página:
+println("Response received from server:")
+val bufferedSource = Source.fromFile("response.txt")
+for (line <- bufferedSource.getLines) {
+    println(line.toUpperCase)
 }
+bufferedSource.close()
 
-socketAplicacao.close()
+new File("response.txt").delete()
