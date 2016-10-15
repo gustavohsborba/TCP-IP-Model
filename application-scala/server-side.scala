@@ -61,5 +61,14 @@ for (line <- bufferedSource.getLines) {
 bufferedSource.close()
 outToClient.close()
 
+
+println("Page sent:")
+val bufferedSource = Source.fromFile("response.srv")
+for (line <- bufferedSource.getLines) {
+    println(line.toUpperCase)
+}
+bufferedSource.close()
+
+
 println("\nRequest for " + fileName + " fulfilled");
 
