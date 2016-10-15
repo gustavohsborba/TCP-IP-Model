@@ -6,10 +6,10 @@ CEFET-MG Computer Engineering's Computer Networks Systems class homework
 proposed by Sandro Renato Dias <https://sites.google.com/site/sandrord>
 
 Development group:
-* [Gustavo Borba](https://github.com/gustavohsborba)  [gustavohsborba@gmail.com]
-* [Bruno Maciel]()  [bmarques.maciel@gmail.com]
-* [Thiago Alexandre](https://github.com/thiagoalexsilva)  [thiagoalexsilva93@gmail.com]
-* [Ana Claudia](https://github.com/gmanaclaudia)  [gmanaclaudia@gmail.com]
+* [Gustavo Henrique de Souza Borba](https://github.com/gustavohsborba)  [gustavohsborba@gmail.com]
+* [Bruno Marques Maciel]()  [bmarques.maciel@gmail.com]
+* [Thiago Alexandre de Souza Silva](https://github.com/thiagoalexsilva)  [thiagoalexsilva93@gmail.com]
+* [Ana Cláudia Gomes de Mendonça](https://github.com/gmanaclaudia)  [gmanaclaudia@gmail.com]
 
 
 ## Setting up Environment
@@ -25,19 +25,17 @@ and manage permissions into your system.
 
 To compile physical layer, just go to it's folder and run the following command:
 ```shell
-g++ -o server server-side.cpp && g++ -o client client-side.c
+ g++ -o physical-client client-side.c && g++ -o physical-server server-side.cpp
 ```
 Now you have a client and a server executables. 
 
 To start them, first execute the server:
 ```shell
-./server
+ ./physical-server
 ```
-Then execute the client. The client needs two arguments:
-1. server IP or hostname
-2. filename to transfer
+Then execute the client with the following command:
 ```shell
-./client 127.0.0.1 datagram.txt
+ ./physical-client
 ```
 
 Primeiro foi implementado um frame (da camada de enlace). Após o início da comunicação do socket, encontramos o MAC address do servidor e o cliente pergunta o tamanho do frame. Quando o servidor responde, o cliente começa a enviar um arquivo dividido em pacotes do tamanho certo para o servidor.
@@ -53,4 +51,10 @@ still in the making
 
 ### Application Layer (Scala)
 
-still in the making
+To execute this layer, run the command line below:
+```shell
+ scala client-side.scala
+```
+Para a execução desta, todos os arquivos envolvidos devem estar presentes na mesma pasta.
+
+Primeiramente, o lado do cliente escreve a requisição de um arquivo com protocolo em HTTP em um arquivo .TXT. Este arquivo .TXT é passado atraves de uma linha de comando na qual há a chamada da parte cliente (camada física), juntamente com o endereço IP da parte servidor (camada física). No lado do servidor, o arquivo de requisição (agora em .SRV) é recebido, lido e suas informações interpretadas a fim de enviar o arquivo requerido ao cliente. Por fim, o cliente recebe o arquivo requerido e o imprime. Finalizando a execução.
