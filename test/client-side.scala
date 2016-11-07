@@ -28,6 +28,7 @@ writer.close()
 
 // Enviando para a camada física:
 val command = "./physical-client "+serverAddress + " request.txt"
+println("Calling "+ command)
 Process(command)!
 
 // Recebendo e imprimindo página:

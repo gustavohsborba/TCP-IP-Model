@@ -30,7 +30,7 @@
 
 
 
-void receiveFile(int sockfd, char *filename){
+void receiveFile(int sockfd, const char *filename){
     // Initiating file transfer. Firstly, opening file to write:
     FILE* file;
     int fd;
@@ -57,7 +57,7 @@ void receiveFile(int sockfd, char *filename){
 
 
 
-void sendFile(int sockfd, char *filename){
+void sendFile(int sockfd, const char *filename){
     FILE* msgFile;
     msgFile = fopen(filename,"rb");
     int msgFd = fileno(msgFile);
@@ -74,7 +74,7 @@ void sendFile(int sockfd, char *filename){
     size_t nbytes = fread(buffer, sizeof(char), MAX_DATA_SIZE-1, msgFile);
     while (nbytes > 0){
         createFrame(&frame, buffer, src_mac, dst_mac);
-        printf("\nsending message of %d bytes to server...\n", strlen(frame.data));
+        printf("\nsending message of %d bytes to server...\n", (int)strlen(frame.data));
         sendFrame(&frame, sockfd, frameSize(&frame));
         bzero(buffer,BUF_SIZ);
         nbytes = fread(buffer, sizeof(char), MAX_DATA_SIZE, msgFile);
@@ -118,14 +118,14 @@ int connectSocket(char *hostnameOrIp, char src_mac[MAC_SIZE], char dst_mac[MAC_S
 
     // Cheating to get server's MAC addres
     // THE CORRECT WAY IS USING ARP COMMAND.
-    char mac[10];
+    /*char mac[10];
     bzero(mac,10);
     getMAC(mac);
     mac[6] = '\0';
     sendMessage(sockfd, mac);
     strncpy(src_mac, mac, 6);
     receiveMessage(sockfd, mac);
-    strncpy(dst_mac, mac, 6);
+    strncpy(dst_mac, mac, 6);*/
 	
     return sockfd;
 }
@@ -152,15 +152,18 @@ int main(int argc, char *argv[])
 
 
     sockfd = connectSocket(hostnameOrIp, src_mac, dst_mac);
+    printf("Passou por aqui!");
 
     // Connection stabilished. Sending message requesting frame size:
     strcpy(buffer,"Yo, bro! What's the Frame size?");
     sendMessage(sockfd, buffer);
+    printf("Passou por aqui!");
 
     // Reading message from server:
     receiveMessage(sockfd, buffer);
     printf("Message size: %s\n", buffer);
     SIZE = strtol (buffer,NULL,10);
+    printf("Passou por aqui!");
 
 
     // with socket size negotiated, send filename:
