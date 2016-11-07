@@ -152,18 +152,15 @@ int main(int argc, char *argv[])
 
 
     sockfd = connectSocket(hostnameOrIp, src_mac, dst_mac);
-    printf("Passou por aqui!");
 
     // Connection stabilished. Sending message requesting frame size:
     strcpy(buffer,"Yo, bro! What's the Frame size?");
     sendMessage(sockfd, buffer);
-    printf("Passou por aqui!");
 
     // Reading message from server:
     receiveMessage(sockfd, buffer);
     printf("Message size: %s\n", buffer);
     SIZE = strtol (buffer,NULL,10);
-    printf("Passou por aqui!");
 
 
     // with socket size negotiated, send filename:
