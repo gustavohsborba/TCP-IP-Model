@@ -43,7 +43,17 @@ Primeiro foi implementado um frame (da camada de enlace). Após o início da com
 
 ### Transport Layer (Python)
 
-still in the making
+UDP:
+ primeiramente, executar a parte servidor da camada física
+```shell
+ ./physical-server
+```
+ segundamente, executar parte do cliente da camada de aplicação
+```shell
+ scala client-side.scala
+```
+
+Esta camada é executada subliminarmente. Ao chamar a parte cliente, a camada de aplicação realiza uma chamada por linha de comando da camada de transporte (parte cleinte) e esta realiza uma chamada por linha de comando da parte cliente da camada física. A camada física se conecta por meio de socket e sua parte servidor realiza o mesmo processo para a camada de aplicação por meio de linha de comando.
 
 ### Network Layer (PHP)
 
