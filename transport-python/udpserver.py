@@ -5,7 +5,7 @@ import subprocess
 try:
     
     # calling application layer
-    subprocess.check_output(["scala" , "server-side.scala"])
+    subprocess.check_output(["scala" , "application-server.scala"])
 	#subprocess.check_output(['./abacaxi'])
     print >>sys.stderr, 'Transport sending to application'
 
