@@ -7,7 +7,7 @@ proposed by Sandro Renato Dias <https://sites.google.com/site/sandrord>
 
 Development group:
 * [Gustavo Henrique de Souza Borba](https://github.com/gustavohsborba)  [gustavohsborba@gmail.com]
-* [Bruno Marques Maciel]()  [bmarques.maciel@gmail.com]
+* [Bruno Marques Maciel](https://github.com/brunomaciel)  [bmarques.maciel@gmail.com]
 * [Thiago Alexandre de Souza Silva](https://github.com/thiagoalexsilva)  [thiagoalexsilva93@gmail.com]
 * [Ana Cláudia Gomes de Mendonça](https://github.com/gmanaclaudia)  [gmanaclaudia@gmail.com]
 
@@ -21,11 +21,11 @@ and manage permissions into your system.
 
 ## Running layers:
 
-### Physical Layer (C++)
+### Physical Layer (C)
 
 To compile physical layer, just go to it's folder and run the following command:
 ```shell
- g++ -o physical-client client-side.c && g++ -o physical-server server-side.cpp
+ g++ -o physical-client client-side.c && g++ -o physical-server server-side.c
 ```
 Now you have a client and a server executables. 
 
@@ -43,7 +43,17 @@ Primeiro foi implementado um frame (da camada de enlace). Após o início da com
 
 ### Transport Layer (Python)
 
-still in the making
+UDP:
+ primeiramente, executar a parte servidor da camada física
+```shell
+ ./physical-server
+```
+ segundamente, executar parte do cliente da camada de aplicação
+```shell
+ scala client-side.scala
+```
+
+Esta camada é executada subliminarmente. Ao chamar a parte cliente, a camada de aplicação realiza uma chamada por linha de comando da camada de transporte (parte cleinte) e esta realiza uma chamada por linha de comando da parte cliente da camada física. A camada física se conecta por meio de socket e sua parte servidor realiza o mesmo processo para a camada de aplicação por meio de linha de comando.
 
 ### Network Layer (PHP)
 

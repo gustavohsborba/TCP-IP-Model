@@ -26,68 +26,6 @@
 
 
 
-    char *hostnameOrIp, src_mac[MAC_SIZE], dst_mac[MAC_SIZE];
-
-
-
-void receiveFile(int sockfd, char *filename){
-    // Initiating file transfer. Firstly, opening file to write:
-    FILE* file;
-    int fd;
-    file = fopen(filename,"wb");
-    fd = fileno(file);
-    if( !file | fd < 0)
-        error("Couldn't create file!");
-
-    // Actually receiving and writing file:
-    struct Frame frame = {};
-    char buffer[BUF_SIZ];
-    while(1) {
-        bzero(buffer, BUF_SIZ);
-        receiveFrame(&frame, sockfd);
-        getData(&frame, buffer);
-        size_t len = strlen(buffer);
-        printf("Message of %d bytes received from client\n\n", (int) len);
-        if ((int) len <= 0) break;
-        else fwrite(buffer, sizeof(char), len, file);
-    }
-    printf("File received.\n");
-    fclose(file);
-}
-
-
-
-void sendFile(int sockfd, char *filename){
-    FILE* msgFile;
-    msgFile = fopen(filename,"rb");
-    int msgFd = fileno(msgFile);
-    if( !msgFile | msgFd < 0)
-        error("File doesn't exist");
-
-
-    // Finally, Sending files:
-    int i = 0;
-    int c;
-    char buffer[BUF_SIZ];
-    struct Frame frame = {};
-    bzero(buffer,BUF_SIZ);
-    size_t nbytes = fread(buffer, sizeof(char), MAX_DATA_SIZE-1, msgFile);
-    while (nbytes > 0){
-        createFrame(&frame, buffer, src_mac, dst_mac);
-        printf("\nsending message of %d bytes to server...\n", strlen(frame.data));
-        sendFrame(&frame, sockfd, frameSize(&frame));
-        bzero(buffer,BUF_SIZ);
-        nbytes = fread(buffer, sizeof(char), MAX_DATA_SIZE, msgFile);
-    }
-    bzero(buffer,BUF_SIZ);
-    createFrame(&frame, buffer, src_mac, dst_mac);
-    sendFrame(&frame, sockfd, frameSize(&frame));
-    printf("file sent.\n");
-    fclose(msgFile);
-}
-
-
-
 
 
 
@@ -118,14 +56,14 @@ int connectSocket(char *hostnameOrIp, char src_mac[MAC_SIZE], char dst_mac[MAC_S
 
     // Cheating to get server's MAC addres
     // THE CORRECT WAY IS USING ARP COMMAND.
-    char mac[10];
+    /*char mac[10];
     bzero(mac,10);
     getMAC(mac);
     mac[6] = '\0';
     sendMessage(sockfd, mac);
     strncpy(src_mac, mac, 6);
     receiveMessage(sockfd, mac);
-    strncpy(dst_mac, mac, 6);
+    strncpy(dst_mac, mac, 6);*/
 	
     return sockfd;
 }
@@ -141,6 +79,7 @@ int main(int argc, char *argv[])
     char *filename;
     struct Frame frame = {};
     char buffer[BUF_SIZ];
+    char *hostnameOrIp, src_mac[MAC_SIZE], dst_mac[MAC_SIZE];
 
 
     if (argc < 2) {
@@ -174,7 +113,7 @@ int main(int argc, char *argv[])
     printf("Return from server: %s (%d bytes)\n", buffer, (int) frameSize(&frame));
 
 
-    sendFile(sockfd,filename);
+    sendFile(sockfd,filename, src_mac, dst_mac);
 
     receiveFile(sockfd,"response.txt");
 

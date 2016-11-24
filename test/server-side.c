@@ -7,70 +7,7 @@
  */
 
 
-/*  */
-
 #include "physical.h"
-
-char this_mac[MAC_SIZE], cli_mac[MAC_SIZE];
-
-
-
-void receiveFile(int sockfd,char *filename){
-    // Initiating file transfer. Firstly, opening file to write:
-    FILE* file;
-    int fd;
-    file = fopen(filename,"wb");
-    fd = fileno(file);
-    if( !file | fd < 0)
-        error("Couldn't create file!");
-
-    // Actually receiving and writing file:
-    struct Frame frame = {};
-    char buffer[BUF_SIZ];
-    while(1) {
-        bzero(buffer, BUF_SIZ);
-        receiveFrame(&frame, sockfd);
-        getData(&frame, buffer);
-        size_t len = strlen(buffer);
-        printf("Message of %d bytes received from client\n\n", (int) len);
-        if ((int) len <= 0) break;
-        else fwrite(buffer, sizeof(char), len, file);
-    }
-    printf("File received.\n");
-    fclose(file);
-}
-
-
-
-void sendFile(int sockfd,char *filename){
-    FILE* msgFile;
-    msgFile = fopen(filename,"rb");
-    int msgFd = fileno(msgFile);
-    if( !msgFile | msgFd < 0)
-        error("File doesn't exist");
-
-
-    // Finally, Sending files:
-    int i = 0;
-    int c;
-    char buffer[BUF_SIZ];
-    struct Frame frame = {};
-    bzero(buffer,BUF_SIZ);
-    size_t nbytes = fread(buffer, sizeof(char), MAX_DATA_SIZE-1, msgFile);
-    while (nbytes > 0){
-        createFrame(&frame, buffer, this_mac, cli_mac);
-        printf("\nsending message of %d bytes to server...\n", (int)strlen(frame.data));
-        sendFrame(&frame, sockfd, frameSize(&frame));
-        bzero(buffer,BUF_SIZ);
-        nbytes = fread(buffer, sizeof(char), MAX_DATA_SIZE, msgFile);
-    }
-    bzero(buffer,BUF_SIZ);
-    createFrame(&frame, buffer, this_mac, cli_mac);
-    sendFrame(&frame, sockfd, frameSize(&frame));
-    printf("file sent.\n");
-    fclose(msgFile);
-}
-
 
 
 int main(int argc, char *argv[])
@@ -78,6 +15,7 @@ int main(int argc, char *argv[])
     int listener, sockfd; // Socket file descriptors
     struct sockaddr_in serv_addr, cli_addr, network_addr;
     socklen_t clilen, network_layer;
+    char this_mac[MAC_SIZE], cli_mac[MAC_SIZE];
 
     // Opening socket to listen to connection:
     listener = socket(AF_INET, SOCK_STREAM, 0);
@@ -145,10 +83,11 @@ int main(int argc, char *argv[])
 
         // calls upper layers:
         printf("\n\ncalling system\n");
-        system("scala server-side.scala");
+        system("python udpserver.py");
+	    //system("scala server-side.scala");
 
         // After upper layers complete processing, get response:
-        sendFile(sockfd, "response.srv");
+        sendFile(sockfd, "response.srv", this_mac, cli_mac);
 	    remove( "response.srv" );
 
         close(sockfd);
