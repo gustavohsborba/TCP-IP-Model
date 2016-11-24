@@ -56,14 +56,14 @@ int connectSocket(char *hostnameOrIp, char src_mac[MAC_SIZE], char dst_mac[MAC_S
 
     // Cheating to get server's MAC addres
     // THE CORRECT WAY IS USING ARP COMMAND.
-    /*char mac[10];
+    char mac[10];
     bzero(mac,10);
     getMAC(mac);
     mac[6] = '\0';
     sendMessage(sockfd, mac);
     strncpy(src_mac, mac, 6);
     receiveMessage(sockfd, mac);
-    strncpy(dst_mac, mac, 6);*/
+    strncpy(dst_mac, mac, 6);
 	
     return sockfd;
 }

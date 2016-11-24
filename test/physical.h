@@ -38,9 +38,10 @@ void error(const char *msg){
 
 
 
-#define NETWORK_INTERFACE "wlp1s0"
-//"ethZero0 TCHARAM"
-
+//#define NETWORK_INTERFACE "wlp1s0"
+#define NETWORK_INTERFACE "wlp7s0"
+//#define NETWORK_INTERFACE "eth0"
+//#define NETWORK_INTERFACE "wlan0"
 
 #define TRANSPORT_PORT_SERVER 63051
 #define TRANSPORT_PORT_CLIENT 63041

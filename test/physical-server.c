@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
         // Cheating to get client's MAC addres.
         // THE CORRECT WAY IS USING ARP COMMAND.
-        /*char mac[10];
+        char mac[10];
         bzero(mac,10);
         receiveMessage(sockfd, mac);
         strncpy(cli_mac, mac, 6);
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         bytesToStr(mac, buffer, 6);
         mac[6] = '\0';
         sendMessage(sockfd, mac);
-        strncpy(this_mac, mac, 6);*/
+        strncpy(this_mac, mac, 6);
 
 
 
