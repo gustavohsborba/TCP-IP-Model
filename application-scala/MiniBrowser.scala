@@ -25,75 +25,56 @@ object MiniBrowser {
 
 class MiniBrowser extends JFrame("Mini Browser") with HyperlinkListener {
 
-  private var locationTextField: JTextField = new JTextField(35)
-
-  private var displayEditorPane: JEditorPane = new JEditorPane()
-
+  // Default window configurations:
   setSize(640, 480)
   setLocationRelativeTo(null)
-
   addWindowListener(new WindowAdapter() {
-
     override def windowClosing(e: WindowEvent) {
       actionExit()
     }
   })
 
+  private var locationTextField: JTextField = new JTextField(35)
+  private var displayEditorPane: JEditorPane = new JEditorPane()
+
+  // creating menus:
   var menu = new JMenuBar()
-
   var fileMenu = new JMenu("File")
-
   fileMenu.setMnemonic(KeyEvent.VK_F)
-
   var fileExitMenuItem = new JMenuItem("Exit", KeyEvent.VK_X)
-
   fileExitMenuItem.addActionListener(new ActionListener() {
-
     def actionPerformed(e: ActionEvent) {
       actionExit()
     }
   })
-
   fileMenu.add(fileExitMenuItem)
-
   menu.add(fileMenu)
-
   setJMenuBar(menu)
 
+  // Making a buttonPanel with locationTextField and a "GO!" button:
   var buttonPanel = new JPanel()
-
   locationTextField.addKeyListener(new KeyAdapter() {
-
     override def keyReleased(e: KeyEvent) {
       if (e.getKeyCode == KeyEvent.VK_ENTER) {
         actionGo()
       }
     }
   })
-
   buttonPanel.add(locationTextField)
-
   var goButton = new JButton("GO")
-
   goButton.addActionListener(new ActionListener() {
-
     def actionPerformed(e: ActionEvent) {
       actionGo()
     }
   })
-
   buttonPanel.add(goButton)
 
+  // setting displayEditorPane configurations:
   displayEditorPane.setContentType("text/html")
-
   displayEditorPane.setEditable(false)
-
   displayEditorPane.addHyperlinkListener(this)
-
   getContentPane.setLayout(new BorderLayout())
-
   getContentPane.add(buttonPanel, BorderLayout.NORTH)
-
   getContentPane.add(new JScrollPane(displayEditorPane), BorderLayout.CENTER)
 
   private def actionExit() {
@@ -123,6 +104,19 @@ class MiniBrowser extends JFrame("Mini Browser") with HyperlinkListener {
     }
     verifiedUrl
   }
+
+  // ------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // CHANGE THESE FUNCTION TO WORK WITH APPLICATION CLIENT SCRIPT!!!!
+  // ------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
 
   private def showPage(pageUrl: URL) {
     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))

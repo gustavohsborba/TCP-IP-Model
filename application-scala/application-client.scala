@@ -7,37 +7,43 @@ import java.nio.file.Files;
 import java.nio.file.FileSystems;
 
 
-val serverPort = 8081
-val clientPort = 63050
-val networkPort = 63051
-//val transportPort = 63051
-var clientAddress = "127.0.0.1"
+val APPLICATION_PORT_SERVER = 63053
+val APPLICATION_PORT_CLIENT = 63043
+val TRANSPORT_PORT_SERVER = 63051
+val TRANSPORT_PORT_CLIENT = 63041
+
+var localhostAddress = "127.0.0.1"
 var serverAddress = "127.0.0.1"
 var page = "/index.html"
+var requestedPage = serverAddress + page
+
 
 if(args.length >= 1)
 	serverAddress = args(0)
 if(args.length >= 2)
 	page = args(1)
+val request = "GET " + page + " HTTP/1.1 Host:" + serverAddress
+println("Application started! Request is:" + request)
 
-// Escrevendo a requisição para a camada de transporte utilizar:
-var writer = new PrintWriter("request.txt", "UTF-8")
-println("Sending request: ")
-println("GET "+ page + " HTTP/1.1")
-writer.println("GET "+ page + " HTTP/1.1")
-writer.close()
 
-// Enviando para a camada de transporte:
-val command = "python udpclient.py "+serverAddress + " request.txt"
-println("Calling "+ command)
-Process(command)!
+val transportSock = new Socket(localhostAddress,TRANSPORT_PORT_CLIENT)
+val writetransportSock = new PrintStream(transportSock.getOutputStream())
+val transportSockRead = new BufferedSource(transportSock.getInputStream()).getLines()
+println("Connected to Transport layer on port " + TRANSPORT_PORT_CLIENT + ". Sending request...")
+
+
+writetransportSock.println(request)
+writetransportSock.flush()
+println("Application waiting for response...")
+
+//wait for layer response
+var response:String = "";
+if(transportSockRead.hasNext)
+    response = transportSockRead.next()
+println("Application Received: " + response)
  
-//Enviando para a camada física:
-/*val command = "./physical-client "+serverAddress + " request.txt"
-println("Calling "+ command)
-Process(command)!*/
 
-// Recebendo e imprimindo página:
+// Receiving and printing page:
 println("Response received from server:")
 val bufferedSource = Source.fromFile("response.txt")
 for (line <- bufferedSource.getLines) {
@@ -49,3 +55,5 @@ var path = FileSystems.getDefault().getPath("request.txt")
 var deu = Files.deleteIfExists(path)
 path = FileSystems.getDefault().getPath("response.txt")
 deu = Files.deleteIfExists(path)
+
+

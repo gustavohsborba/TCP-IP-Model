@@ -38,17 +38,18 @@ void error(const char *msg){
 
 
 
-#define NETWORK_INTERFACE "wlp1s0"
+//#define NETWORK_INTERFACE "wlp1s0"
+#define NETWORK_INTERFACE "wlp7s0"
 //"ethZero0 TCHARAM"
 
 
-#define TRANSPORT_PORT_SERVER 63051
-#define TRANSPORT_PORT_CLIENT 63041
-#define PORT_NUMBER 8761
-#define MIN_MSG_BUFF 256
-#define MIN_MSG_SIZE MIN_MSG_BUFF - 1
-#define BUF_SIZ      576
-#define MAX_BUF	     BUF_SIZ - 1
+#define INTERNET_PORT_SERVER 63051
+#define INTERNET_PORT_CLIENT 63041
+#define PORT_NUMBER           8761
+#define MIN_MSG_BUFF          576
+#define MIN_MSG_SIZE          MIN_MSG_BUFF - 1
+#define BUF_SIZ               576
+#define MAX_BUF	              BUF_SIZ - 1
 
 
 #define PREAMBLE_SIZE 8
@@ -57,6 +58,66 @@ void error(const char *msg){
 #define CHECKSUM_SIZE 4
 #define MAX_DATA_SIZE MAX_BUF-PREAMBLE_SIZE-(2*MAC_SIZE)-PROTOCOL_SIZE-CHECKSUM_SIZE-2
 
+#define TEMP_FILE     "response.txt"
+#define RESPONSE_FILE "response_physical.tmp"
+#define REQUEST_FILE  "request_physical.tmp"
+
+
+
+/*************************************************************************************************
+ *                                  SOCKET FUNCTIONS                                             *
+ *************************************************************************************************/
+
+
+int startListening(int port){
+    int listener, sockfd; // Socket file descriptors
+    struct sockaddr_in serv_addr;
+    // Opening socket to listen to connection:
+    listener = socket(AF_INET, SOCK_STREAM, 0);
+    if (listener < 0)
+        error("ERROR opening socket");
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = htons(port);
+    if (bind(listener, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+        error("ERROR on binding");
+    listen(listener,5);
+    return listener;
+}
+
+int connectSocket(char *hostnameOrIp, int port_number){
+    int sockfd; // socket file descriptor
+    struct hostent *server;
+    struct sockaddr_in serv_addr;
+    struct ifreq ifr;
+
+    // Opening socket to start connection:
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0)
+        error("ERROR opening socket");
+    // resolving host:
+    server = gethostbyname(hostnameOrIp);
+    if (server == NULL)
+        error("ERROR, no such host\n");
+    bzero((char *) &serv_addr, sizeof(serv_addr)); // cleans serv_addr
+
+    // configuring and connecting socket:
+    serv_addr.sin_family = AF_INET;
+    bcopy( (char *)server->h_addr,
+           (char *)&serv_addr.sin_addr.s_addr,
+           server->h_length);
+    serv_addr.sin_port = htons(port_number);
+    if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
+        error("ERROR connecting");
+
+    return sockfd;
+}
+
+
+/*************************************************************************************************
+ *                              FRAME DEFINITION AND FUNCTIONS                                   *
+ *************************************************************************************************/
 
 
 struct Frame{
@@ -170,13 +231,11 @@ void sendFrame(struct Frame *frame, int socket, size_t frame_size){
 
 
 
-/*
- * sendMessage and receiveMessage
- *
- */
-
-
-
+/*************************************************************************************************
+ *                                  MESSAGE  FUNCTIONS                                           *
+ *************************************************************************************************/
+ 
+ 
 void sendMessage(int sockfd, char *msg){
     char buffer[MIN_MSG_SIZE];
     ssize_t n;
@@ -201,11 +260,6 @@ void receiveMessage(int sockfd, char *msg){
 
 
 
-
-
-
-
-
 void getMAC(char mac[MAC_SIZE]){
     int s;
     struct ifreq buffer;
@@ -218,6 +272,42 @@ void getMAC(char mac[MAC_SIZE]){
 
     for( s = 0; s < 6; s++ )
         mac[s] = (char) buffer.ifr_hwaddr.sa_data[s];
+}
+
+
+
+
+
+/*************************************************************************************************
+ *                       'SENDING FILES THROUGH FRAMES' FUNCTIONS                                *
+ *************************************************************************************************/
+
+void writeFile(char *buffer, int size, char *filename){
+    FILE* file;
+    int fd;
+    file = fopen(filename,"wb");
+    fd = fileno(file);
+    if( !file | fd < 0)
+        error("Couldn't create file!");
+    size_t len = strlen(buffer);
+    printf("Sending data to physical medium...\n\n");
+    if ((int) len <= 0) error("LEN <= 0 from WRITE FILE");
+    else fwrite(buffer, sizeof(char), len, file);
+    fclose(file);
+}
+
+int readFile(char *buffer, char *filename){
+    FILE* file;
+    int fd;
+    file = fopen(filename,"wb");
+    fd = fileno(file);
+    if( !file | fd < 0)
+        error("Couldn't create file!");
+    bzero(buffer, BUF_SIZ);
+    printf("Getting data from physical medium...\n\n");
+    size_t size = fread(buffer, sizeof(char), MAX_DATA_SIZE-1, file);
+    fclose(file);
+    return (int) size;
 }
 
 

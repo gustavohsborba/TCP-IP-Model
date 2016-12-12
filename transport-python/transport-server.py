@@ -1,36 +1,48 @@
 import socket
 import sys
 
+LOCALHOST = "localhost"
+TRANSPORT_PORT_SERVER = 63052;
+TRANSPORT_PORT_CLIENT = 63042;
+APPLICATION_PORT_SERVER = 63053;
+APPLICATION_PORT_CLIENT = 63043;
+MAX_BUF = 65536
+
 # Create a TCP/IP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+net_listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Bind the socket to the port
-server_address = ('localhost', 10000)
-print >>sys.stderr, 'starting up on %s port %s' % server_address
-sock.bind(server_address)
-
+netlayer_address = (LOCALHOST, TRANSPORT_PORT_SERVER)
+print >>sys.stderr, 'starting up on %s port %s' % netlayer_address
+net_listener.bind(netlayer_address)
 # Listen for incoming connections
-sock.listen(1)
+net_listener.listen(1)
 
 while True:
+    
     # Wait for a connection
-    print >>sys.stderr, 'waiting for a connection'
-    connection, client_address = sock.accept()
+    print >> sys.stderr, 'waiting for an Internet Layer connection'
+    net_sock, client_address = net_listener.accept()
 	
-	try:
-        print >>sys.stderr, 'connection from', client_address
+    try:
+        # Accept internet layer connection and receive request
+        print >> sys.stderr, 'connection from lower layer: ', client_address
+        data = net_sock.recv(MAX_BUF)
+        print >>sys.stderr, 'received:\n"%s"' % data
 
-        # Receive the data in small chunks and retransmit it
-        while True:
-            data = connection.recv(16)
-            print >>sys.stderr, 'received "%s"' % data
-            if data:
-                print >>sys.stderr, 'sending data back to the client'
-                connection.sendall(data)
-            else:
-                print >>sys.stderr, 'no more data from', client_address
-                break
-            
+        # Connect with application layer and send request data:
+        applayer_address = (LOCALHOST, APPLICATION_PORT_SERVER)
+        appl_sock = socket(socket.AF_INET, socket.SOCK_STREAM)
+        appl_sock.connect(applayer_address)
+        print >>sys.stderr, 'Sending to application layer...\n"' % data        
+        appl_sock.sendall(data)
+        
+        #Getting application layer response and sending back to internet layer
+        print >>sys.stderr, 'Data sent. Receiving response...\n"' % data        
+        data = appl_sock.recv(MAX_BUF)
+        print >>sys.stderr, 'sending to transport layer...\n"' % data        
+        net_sock.sendall(data)
+
+        appl_sock.close()
     finally:
         # Clean up the connection
-        connection.close()
+        net_sock.close()

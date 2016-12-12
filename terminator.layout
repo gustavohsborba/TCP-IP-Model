@@ -1,0 +1,120 @@
+[global_config]
+[keybindings]
+[layouts]
+  [[default]]
+    [[[child0]]]
+      fullscreen = False
+      last_active_term = e47f0134-3d3a-4b19-a7e0-43c5dfd49f6e
+      last_active_window = True
+      maximised = True
+      order = 0
+      parent = ""
+      position = 0:25
+      size = 1366, 717
+      title = gustavo@HAL9000: ~
+      type = Window
+    [[[child1]]]
+      order = 0
+      parent = child0
+      position = 679
+      ratio = 0.498169838946
+      type = HPaned
+    [[[child10]]]
+      order = 0
+      parent = child9
+      position = 177
+      ratio = 0.5
+      type = VPaned
+    [[[child13]]]
+      order = 1
+      parent = child9
+      position = 177
+      ratio = 0.5
+      type = VPaned
+    [[[child2]]]
+      order = 0
+      parent = child1
+      position = 357
+      ratio = 0.5
+      type = VPaned
+    [[[child3]]]
+      order = 0
+      parent = child2
+      position = 177
+      ratio = 0.5
+      type = VPaned
+    [[[child6]]]
+      order = 1
+      parent = child2
+      position = 177
+      ratio = 0.5
+      type = VPaned
+    [[[child9]]]
+      order = 1
+      parent = child1
+      position = 357
+      ratio = 0.5
+      type = VPaned
+    [[[terminal11]]]
+      command = scala application-server.scala; bash;
+      order = 0
+      parent = child10
+      profile = default
+      type = Terminal
+      uuid = 16de6891-94e6-477f-bdd5-36f671ca3e8d
+    [[[terminal12]]]
+      command = python transport-server.py; bash;
+      order = 1
+      parent = child10
+      profile = default
+      type = Terminal
+      uuid = 8c304bf4-f4b5-4b56-802a-8d91bbd7f6a6
+    [[[terminal14]]]
+      command = php5 -f internet-servedr.php; bash;
+      order = 0
+      parent = child13
+      profile = default
+      type = Terminal
+      uuid = f42c3a92-69cf-4e40-a77a-1cdde20273dc
+    [[[terminal15]]]
+      command = ./physical-server; bash;
+      order = 1
+      parent = child13
+      profile = default
+      type = Terminal
+      uuid = b76e4560-c253-474f-a809-702002fb943b
+    [[[terminal4]]]
+      command = scala application-client.scala; bash;
+      order = 0
+      parent = child3
+      profile = default
+      type = Terminal
+      uuid = e47f0134-3d3a-4b19-a7e0-43c5dfd49f6e
+    [[[terminal5]]]
+      command = echo terminal 5; bash;
+      order = 1
+      parent = child3
+      profile = default
+      type = Terminal
+      uuid = 1e9119ec-c2ac-45ee-84d5-cc1b86428f7b
+    [[[terminal7]]]
+      command = echo terminal 7; bash;
+      order = 0
+      parent = child6
+      profile = default
+      type = Terminal
+      uuid = 4eebbe2c-bd99-4638-a636-66a0ed1f570b
+    [[[terminal8]]]
+      command = ./physical-client; bash;
+      order = 1
+      parent = child6
+      profile = default
+      type = Terminal
+      uuid = 35df3211-0e88-443d-9a8f-3fcbe4e31cd9
+[plugins]
+[profiles]
+  [[default]]
+    background_darkness = 0.93
+    background_image = None
+    background_type = transparent
+    split_to_group = True
