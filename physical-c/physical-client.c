@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
         printf("\nDestiny IP found: %s", hostnameOrIp);
         
         // This simulates physical layer Sending package though medium...
-        writeFile(rawrequest, strlen(buffer), REQUEST_FILE);
+        writeFile(rawrequest, strlen(buffer), REQUEST_CLIENT_FILE);
         
         // Connecting to server socket:
         printf("\nConnecting to server...");
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
         
         // Finally Sends request from the file created (physical medium) frame by frame to server.
         printf("\nSending request...");
-        sendFile(sockfd,REQUEST_FILE, src_mac, dst_mac);
+        sendFile(sockfd,REQUEST_CLIENT_FILE, src_mac, dst_mac);
 
         // Receive response frame by frame from server and creates a temp file.
         printf("\nWaiting for response...");

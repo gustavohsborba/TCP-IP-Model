@@ -8,8 +8,8 @@ import scala.io._
 import java.io._
 
 
-val APPLICATION_PORT_SERVER = 63053;
-val APPLICATION_PORT_CLIENT = 63043;
+val APPLICATION_PORT_SERVER = 41111;
+val APPLICATION_PORT_CLIENT = 41112;
 
 
 val servSock = new ServerSocket(APPLICATION_PORT_SERVER) 
@@ -17,7 +17,7 @@ val servSock = new ServerSocket(APPLICATION_PORT_SERVER)
 
 while (true) {
     // Accept connection
-    println("Scala Basic Web Server is Listening...");
+    println("Scala Basic Web Server is Listening to port " + APPLICATION_PORT_SERVER +"...");
 	val transportSock = servSock.accept()
     val transpSockRead = new BufferedSource(transportSock.getInputStream()).getLines()
     val transpSockWrite = new PrintStream(transportSock.getOutputStream())

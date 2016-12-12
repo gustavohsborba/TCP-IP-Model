@@ -70,7 +70,7 @@
       type = Terminal
       uuid = 8c304bf4-f4b5-4b56-802a-8d91bbd7f6a6
     [[[terminal14]]]
-      command = php5 -f internet-servedr.php; bash;
+      command = php -f internet-server.php; bash;
       order = 0
       parent = child13
       profile = default

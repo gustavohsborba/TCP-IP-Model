@@ -2,11 +2,11 @@ import socket
 import sys
 
 LOCALHOST = "localhost"
-TRANSPORT_PORT_SERVER = 63052;
-TRANSPORT_PORT_CLIENT = 63042;
-APPLICATION_PORT_SERVER = 63053;
-APPLICATION_PORT_CLIENT = 63043;
-MAX_BUF = 65536
+TRANSPORT_PORT_SERVER = 31111;
+TRANSPORT_PORT_CLIENT = 31112;
+APPLICATION_PORT_SERVER = 41111;
+APPLICATION_PORT_CLIENT = 41112;
+MAX_BUF = 65536;
 
 # Create a TCP/IP socket
 net_listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -25,21 +25,21 @@ while True:
 	
     try:
         # Accept internet layer connection and receive request
-        print >> sys.stderr, 'connection from lower layer: ', client_address
+        print >> sys.stderr, 'connection from internet layer: ', client_address
         data = net_sock.recv(MAX_BUF)
-        print >>sys.stderr, 'received:\n"%s"' % data
+        print >>sys.stderr, 'received:\n\t"%s"' % data
 
         # Connect with application layer and send request data:
         applayer_address = (LOCALHOST, APPLICATION_PORT_SERVER)
-        appl_sock = socket(socket.AF_INET, socket.SOCK_STREAM)
+        appl_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         appl_sock.connect(applayer_address)
-        print >>sys.stderr, 'Sending to application layer...\n"' % data        
+        print >>sys.stderr, 'Sending data to application layer...\n"'        
         appl_sock.sendall(data)
         
         #Getting application layer response and sending back to internet layer
-        print >>sys.stderr, 'Data sent. Receiving response...\n"' % data        
+        print >>sys.stderr, 'Data sent. Receiving response...\n"'
         data = appl_sock.recv(MAX_BUF)
-        print >>sys.stderr, 'sending to transport layer...\n"' % data        
+        print >>sys.stderr, 'sending to transport layer...\n"'
         net_sock.sendall(data)
 
         appl_sock.close()

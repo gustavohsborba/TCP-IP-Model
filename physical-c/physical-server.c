@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     socklen_t client_len;
     char this_mac[MAC_SIZE], cli_mac[MAC_SIZE];
 
+    printf("Physical layer started on server!");
     listener = startListening(PORT_NUMBER);
 
     while(1){
@@ -51,7 +52,7 @@ int main(int argc, char *argv[])
         bzero(buffer,BUF_SIZ);
         receiveMessage(sockfd, buffer);
 
-        // Sending frame size response:
+        // Sending frame size response: 
         printf("\nNegotiating frame size...");
         bzero(buffer, BUF_SIZ);
         sprintf(buffer,"%d",MAX_BUF);
@@ -59,20 +60,20 @@ int main(int argc, char *argv[])
         
         // Receiving request:
         printf("\nReceiving request...");
-        receiveFile(sockfd, (char*) REQUEST_FILE);
+        receiveFile(sockfd, (char*) REQUEST_SERVER_FILE);
 
         // calls upper layers:
-        printf("\nSending request to upper layers");
+        printf("\nSending request to upper layers...");
         sockfdil = connectSocket("localhost", INTERNET_PORT_SERVER);
-        strcpy(buffer,"Request received!\n");
+        strcpy(buffer,"\nRequest received!");
         sendMessage(sockfdil, buffer);
 
         // After upper layers complete processing, get response:
         printf("\nSending response...");
         receiveMessage(sockfd, buffer);
-        printf("\n Ok message from Internet Layer: %s", buffer);
-        sendFile(sockfd, RESPONSE_FILE, this_mac, cli_mac);
-	    remove( "response.srv" );
+        printf("\nOk message from Internet Layer: %s", buffer);
+        sendFile(sockfd, RESPONSE_SERVER_FILE, this_mac, cli_mac);
+	    remove( RESPONSE_SERVER_FILE );
 
         close(sockfd);
         printf("\nDONE!\n\n");

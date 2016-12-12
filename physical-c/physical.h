@@ -43,9 +43,9 @@ void error(const char *msg){
 //"ethZero0 TCHARAM"
 
 
-#define INTERNET_PORT_SERVER 63051
-#define INTERNET_PORT_CLIENT 63041
-#define PORT_NUMBER           8761
+#define INTERNET_PORT_SERVER 21111
+#define INTERNET_PORT_CLIENT 21112
+#define PORT_NUMBER          11110
 #define MIN_MSG_BUFF          576
 #define MIN_MSG_SIZE          MIN_MSG_BUFF - 1
 #define BUF_SIZ               576
@@ -59,8 +59,10 @@ void error(const char *msg){
 #define MAX_DATA_SIZE MAX_BUF-PREAMBLE_SIZE-(2*MAC_SIZE)-PROTOCOL_SIZE-CHECKSUM_SIZE-2
 
 #define TEMP_FILE     "response.txt"
-#define RESPONSE_FILE "response_physical.tmp"
-#define REQUEST_FILE  "request_physical.tmp"
+#define RESPONSE_SERVER_FILE "response_physical.srv"
+#define REQUEST_SERVER_FILE "request_physical.srv"
+#define RESPONSE_CLIENT_FILE "response_physical.cli"
+#define REQUEST_CLIENT_FILE  "request_physical.cli"
 
 
 
