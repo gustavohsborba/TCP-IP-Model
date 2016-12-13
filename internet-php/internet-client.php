@@ -43,7 +43,8 @@ do {
 	$result = socket_connect($physicalSock, $LOCALHOST, $PHYSICAL_PORT_CLIENT);
 	echo "OK.\n";
 	
-    echo "Sending UDP package to physical layer...\n";
+    /* Sending package to physical layer and waiting response */
+    echo "Sending IP package to physical layer...\n";
 	$bsent = socket_write($physicalSock, $buf);
     echo "$bsent bytes sent\n";
 
@@ -53,10 +54,10 @@ do {
     echo "physical layer Response received! \n";
     echo "MESSAGE:\n\t$buf\n";
 
-
-    /* **********
+    
+    /* *************************************************************
         DO SOME INERNET LAYER PROCESSING HERE
-    ********** */
+    ************************************************************** */
 
     // send package to transport layer
 	echo "\nSending package to transport layer...\n";

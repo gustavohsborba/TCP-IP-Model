@@ -132,27 +132,22 @@ int connectSocket(char *hostnameOrIp, int port_number){
     struct ifreq ifr;
 
     // Opening socket to start connection:
-    printf("\nOpening socket....");
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
         error("ERROR opening socket");
     // resolving host:
-    printf("\nResolving Host %s....", hostnameOrIp);
     server = gethostbyname(hostnameOrIp);
     printf("\nHost solved!");
     if (server == NULL)
         error("ERROR, no such host\n");
-    printf("\ncleaning serv_addr...");
     bzero((char *) &serv_addr, sizeof(serv_addr)); // cleans serv_addr
 
     // configuring and connecting socket:
-    printf("\nConfiguring and connecting....");
     serv_addr.sin_family = AF_INET;
     bcopy( (char *)server->h_addr,
            (char *)&serv_addr.sin_addr.s_addr,
            server->h_length);
     serv_addr.sin_port = htons(port_number);
-    printf("\nConfigured! now connecting....");
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
         error("ERROR connecting");
 
@@ -248,18 +243,20 @@ void printFrame2(struct Frame *frame){
     printf("\tethernetType: %s\n",aux);
     getData(frame, aux);
 
-    char data[BUF_SIZ];
+    char data[BUF_SIZ*2];
     int i=0, j=0;
-    data[0] = '[';
-    for(j=1; i<strnlen(frame->data, MAX_DATA_SIZE); j++){
-        for(i=0; i<strnlen(frame->data, MAX_DATA_SIZE); i++)
-            if(aux[i]=='\n' || aux[i]=='\t' || aux[i]==' ')
-                aux[i] = '_';
-        if((j%15)==0) data[j++] = '\t';
-        data[j] = aux[i];
+    for(i=0; i<strnlen(frame->data, MAX_DATA_SIZE); i++){
+        if(aux[i]=='\n' || aux[i]=='\t' || aux[i]==' ')
+            aux[i] = '_';
+        data[j++] = aux[i];
+        if((j%30)==0) {
+            data[j++] = '\n';
+            data[j++] = '\t';
+            data[j++] = '\t';
+        }
     }
-    data[j++] = ']';
-    data[j] = '\0';
+    
+    data[j+1] = '\0';
     printf("\tdata: [%s]\n",data);
 
     bytesToStr(frame->checksum, aux, CHECKSUM_SIZE );
@@ -288,7 +285,7 @@ void receiveFrame(struct Frame *frame, int sockfd){
     strncpy (frame->checksum, buffer+offset, CHECKSUM_SIZE);
     if(n!=0){
         printf("Frame Received!!! (%d bytes) \n", (int) n);
-        printFrame(frame);
+        printFrame2(frame);
     }
 }
 
@@ -297,9 +294,9 @@ void sendFrame(struct Frame *frame, int socket, size_t frame_size){
     ssize_t sent_bytes;
     sent_bytes = send(socket, (int*)frame, frame_size, 0);
     if (sent_bytes < 0)
-        error("ERROR writing to socket");
+        error("\tERROR writing to socket\n");
     printf("Frame sent! (%d bytes)\n", (int) sent_bytes );
-    printFrame(frame);
+    printFrame2(frame);
 }
 
 
@@ -315,11 +312,12 @@ void sendFrame(struct Frame *frame, int socket, size_t frame_size){
 void sendMessage(int sockfd, char *msg){
     char buffer[MAX_FILESIZE];
     ssize_t n;
-    strcpy(buffer, msg);
+    strncpy(buffer, msg, MAX_FILESIZE);
+    buffer[MAX_FILESIZE-1] = '\0';
     n = write(sockfd,buffer,strlen(buffer));
     if (n < 0)
-        error("ERROR sending to socket");
-    printf("%d bytes sent.\n", (int)n);
+        error("\tERROR sending to socket\n");
+    printf("\t%d bytes sent.\n", (int)n);
 }
 
 void receiveMessage(int sockfd, char *msg){
@@ -365,7 +363,7 @@ void writeFile(char *buffer, int size, char *filename){
     if( !file | fd < 0)
         error("Couldn't create file!");
     size_t len = strlen(buffer);
-    printf("Sending data through physical medium...\n\n");
+    printf("Sending data through physical medium...\n");
     if ((int) len <= 0) error("LEN <= 0 from WRITE FILE");
     else fwrite(buffer, sizeof(char), len, file);
     fclose(file);
@@ -383,7 +381,7 @@ int readFile(char *buffer, char *filename){
     int length = ftell (file);
     fseek (file, 0, SEEK_SET);
 
-    printf("\nReading data from physical medium...\n");
+    printf("Reading data from physical medium...\n");
     size_t size = fread(buffer, sizeof(char), length, file);
     buffer[size] = '\0';
     printf("%d bytes Read.\n", (int)size);

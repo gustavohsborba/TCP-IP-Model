@@ -41,15 +41,16 @@ int main(int argc, char *argv[])
     char *temp;
     struct Frame frame = {};
     
+    printf("Client Physical layer started!\n");
     listener = startListening(PHYSICAL_PORT_CLIENT);
     
     while(1){
-        printf("\nPhysical layer listening to upper layers on port %d...", PHYSICAL_PORT_CLIENT);
+        printf("Physical layer listening to upper layers on port %d...\n", PHYSICAL_PORT_CLIENT);
         sockfdil = accept(listener, (struct sockaddr *) &network_layer,  &network_len);
-        printf("\nConnection stabilished!");
+        printf("Connection stabilished!\n");
 
         // reads network package and finds destiny IP inside it. 
-        printf("\nGetting request...");
+        printf("Getting request from internet layer...\n");
         bzero(internalBuffer,MAX_FILESIZE);
         bread=recv(sockfdil,internalBuffer,MAX_FILESIZE,0) <= 0;
         strncpy(rawrequest, internalBuffer, MAX_FILESIZE);
@@ -64,19 +65,17 @@ int main(int argc, char *argv[])
             printf("temp: %s\n", temp);
             temp=strtok(NULL," ");
         }
-        printf("Request:\n\t%s\n", rawrequest);
-        printf("\nDestiny IP found: %s\n", hostnameOrIp);
         
         // This simulates physical layer Sending package though medium...
         writeFile(rawrequest, strlen(rawrequest), REQUEST_CLIENT_FILE);
         
         // Connecting to server socket:
-        printf("\nConnecting to server %s on port %d...", hostnameOrIp, PORT_NUMBER);
+        printf("Connecting to server %s on port %d...\n", hostnameOrIp, PORT_NUMBER);
         sockfd = connectSocket(hostnameOrIp, PORT_NUMBER);
 
         // Cheating to get server's MAC addres
         // THE CORRECT WAY IS USING ARP COMMAND.
-        /*printf("Getting MAC Addresses...\n");
+        printf("Getting MAC Addresses...\n");
         bzero(buffer,10);
         getMAC(buffer);  // getting own mac
         buffer[6] = '\0';
@@ -86,25 +85,28 @@ int main(int argc, char *argv[])
         strncpy(dst_mac, buffer, 6);
 
         // Connection stabilished. Sending message requesting frame size:
-        printf("\nNegotiating Frame Size....");
+        printf("Negotiating Frame Size....\n");
         strcpy(buffer,"Yo, bro! What's the Frame size?");
         sendMessage(sockfd, buffer);
 
         // Reading message from server:
         receiveMessage(sockfd, buffer);
-        printf("\nMessage size: %s\n", buffer);*/
+        printf("Message size: %s\n", buffer);
         
         // Finally Sends request from the file created (physical medium) frame by frame to server.
-        printf("\nSending request...");
+        printf("Sending request to server...\n");
         sendFile(sockfd,REQUEST_CLIENT_FILE, src_mac, dst_mac);
         remove( REQUEST_CLIENT_FILE );
 
         // Receive response frame by frame from server and creates a temp file.
-        printf("\nWaiting for response...");
+        printf("Waiting for server response...\n");
         receiveFile(sockfd,RESPONSE_CLIENT_FILE);
         
-        // Read response from the temp file and send trough internet layer socket
-        readFile(internalBuffer, RESPONSE_CLIENT_FILE);//"404.html");
+        // Read response from the temp file and 
+        readFile(internalBuffer, RESPONSE_CLIENT_FILE);
+
+        // Send response trough internet layer socket
+        printf("Sending response to Internet Layer...\n");
         sendMessage(sockfdil, internalBuffer);
         receiveMessage(sockfdil, internalBuffer);
         remove( RESPONSE_CLIENT_FILE );
