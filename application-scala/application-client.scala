@@ -35,7 +35,7 @@ Thread sleep 5000
 val transportSock = new Socket(localhostAddress,TRANSPORT_PORT_CLIENT)
 val writetransportSock = new PrintStream(transportSock.getOutputStream())
 println("Connected to Transport layer on port " + TRANSPORT_PORT_CLIENT + ". Sending request...")
-writetransportSock.println(request)
+writetransportSock.print(request)
 writetransportSock.flush()
 
 

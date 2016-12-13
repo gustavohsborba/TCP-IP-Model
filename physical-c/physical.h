@@ -8,6 +8,7 @@
 
 
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -47,7 +48,7 @@ void error(const char *msg){
 #define INTERNET_PORT_CLIENT 21112
 #define PHYSICAL_PORT_SERVER 11111
 #define PHYSICAL_PORT_CLIENT 11112
-#define PORT_NUMBER          PHYSICAL_PORT_SERVER
+#define PORT_NUMBER           9999
 #define MIN_MSG_BUFF          576
 #define MIN_MSG_SIZE          MIN_MSG_BUFF - 1
 #define BUF_SIZ               576
@@ -66,6 +67,39 @@ void error(const char *msg){
 #define REQUEST_SERVER_FILE "request_physical.srv"
 #define RESPONSE_CLIENT_FILE "response_physical.cli"
 #define REQUEST_CLIENT_FILE  "request_physical.cli"
+#define LOCALHOST            "127.0.0.1"
+
+
+
+/*************************************************************************************************
+ *                                  USEFUL FUNCTIONS                                             *
+ *************************************************************************************************/
+
+
+char *ltrim(char *s) 
+{     
+    while(isspace(*s)) s++;     
+    return s; 
+}  
+
+char *rtrim(char *s) 
+{     
+    char* back;
+    int len = strlen(s);
+
+    if(len == 0)
+        return(s); 
+
+    back = s + len;     
+    while(isspace(*--back));     
+    *(back+1) = '\0';     
+    return s; 
+}  
+
+char *trim(char *s) 
+{     
+    return rtrim(ltrim(s));  
+} 
 
 
 
@@ -98,21 +132,27 @@ int connectSocket(char *hostnameOrIp, int port_number){
     struct ifreq ifr;
 
     // Opening socket to start connection:
+    printf("\nOpening socket....");
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
         error("ERROR opening socket");
     // resolving host:
+    printf("\nResolving Host %s....", hostnameOrIp);
     server = gethostbyname(hostnameOrIp);
+    printf("\nHost solved!");
     if (server == NULL)
         error("ERROR, no such host\n");
+    printf("\ncleaning serv_addr...");
     bzero((char *) &serv_addr, sizeof(serv_addr)); // cleans serv_addr
 
     // configuring and connecting socket:
+    printf("\nConfiguring and connecting....");
     serv_addr.sin_family = AF_INET;
     bcopy( (char *)server->h_addr,
            (char *)&serv_addr.sin_addr.s_addr,
            server->h_length);
     serv_addr.sin_port = htons(port_number);
+    printf("\nConfigured! now connecting....");
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
         error("ERROR connecting");
 
@@ -273,7 +313,7 @@ void sendFrame(struct Frame *frame, int socket, size_t frame_size){
  
  
 void sendMessage(int sockfd, char *msg){
-    char *buffer;
+    char buffer[MAX_FILESIZE];
     ssize_t n;
     strcpy(buffer, msg);
     n = write(sockfd,buffer,strlen(buffer));
@@ -283,10 +323,10 @@ void sendMessage(int sockfd, char *msg){
 }
 
 void receiveMessage(int sockfd, char *msg){
-    char buffer[MIN_MSG_SIZE];
+    char buffer[MAX_FILESIZE];
     ssize_t n;
-    bzero(buffer,MIN_MSG_BUFF);
-    n = read(sockfd,buffer,MIN_MSG_SIZE);
+    bzero(buffer,MAX_FILESIZE);
+    n = read(sockfd,buffer,MAX_FILESIZE);
     if (n < 0)
         error("ERROR reading from socket");
     printf("%d bytes received: %s\n", (int) n, buffer);
@@ -345,7 +385,7 @@ int readFile(char *buffer, char *filename){
 
     printf("\nReading data from physical medium...\n");
     size_t size = fread(buffer, sizeof(char), length, file);
-    buffer[length] = '\0';
+    buffer[size] = '\0';
     printf("%d bytes Read.\n", (int)size);
     fclose(file);
     return (int) size;

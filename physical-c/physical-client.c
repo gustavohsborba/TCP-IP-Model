@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
             if(strstr(temp,"Host:") == temp){
                 strtok(temp,":");
                 hostnameOrIp=strtok(NULL,":");
+                hostnameOrIp=trim(hostnameOrIp);
                 break;
             }
             printf("temp: %s\n", temp);
@@ -67,7 +68,7 @@ int main(int argc, char *argv[])
         printf("\nDestiny IP found: %s\n", hostnameOrIp);
         
         // This simulates physical layer Sending package though medium...
-        writeFile(rawrequest, strlen(buffer), REQUEST_CLIENT_FILE);
+        writeFile(rawrequest, strlen(rawrequest), REQUEST_CLIENT_FILE);
         
         // Connecting to server socket:
         printf("\nConnecting to server %s on port %d...", hostnameOrIp, PORT_NUMBER);
@@ -75,6 +76,7 @@ int main(int argc, char *argv[])
 
         // Cheating to get server's MAC addres
         // THE CORRECT WAY IS USING ARP COMMAND.
+        /*printf("Getting MAC Addresses...\n");
         bzero(buffer,10);
         getMAC(buffer);  // getting own mac
         buffer[6] = '\0';
@@ -83,7 +85,6 @@ int main(int argc, char *argv[])
         receiveMessage(sockfd, buffer); // receiving server's mac
         strncpy(dst_mac, buffer, 6);
 
-
         // Connection stabilished. Sending message requesting frame size:
         printf("\nNegotiating Frame Size....");
         strcpy(buffer,"Yo, bro! What's the Frame size?");
@@ -91,11 +92,12 @@ int main(int argc, char *argv[])
 
         // Reading message from server:
         receiveMessage(sockfd, buffer);
-        printf("\nMessage size: %s\n", buffer);
+        printf("\nMessage size: %s\n", buffer);*/
         
         // Finally Sends request from the file created (physical medium) frame by frame to server.
         printf("\nSending request...");
         sendFile(sockfd,REQUEST_CLIENT_FILE, src_mac, dst_mac);
+        remove( REQUEST_CLIENT_FILE );
 
         // Receive response frame by frame from server and creates a temp file.
         printf("\nWaiting for response...");
@@ -105,6 +107,7 @@ int main(int argc, char *argv[])
         readFile(internalBuffer, RESPONSE_CLIENT_FILE);//"404.html");
         sendMessage(sockfdil, internalBuffer);
         receiveMessage(sockfdil, internalBuffer);
+        remove( RESPONSE_CLIENT_FILE );
 
         close(sockfd);
         close(sockfdil);
