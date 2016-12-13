@@ -91,14 +91,14 @@
       type = Terminal
       uuid = e47f0134-3d3a-4b19-a7e0-43c5dfd49f6e
     [[[terminal5]]]
-      command = echo terminal 5; bash;
+      command = python transport-client.py; bash;
       order = 1
       parent = child3
       profile = default
       type = Terminal
       uuid = 1e9119ec-c2ac-45ee-84d5-cc1b86428f7b
     [[[terminal7]]]
-      command = echo terminal 7; bash;
+      command = php -f internet-client.php; bash;
       order = 0
       parent = child6
       profile = default
