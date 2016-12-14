@@ -54,9 +54,9 @@ int main(int argc, char *argv[])
         bzero(internalBuffer,MAX_FILESIZE);
         bread=recv(sockfdil,internalBuffer,MAX_FILESIZE,0) <= 0;
         strncpy(rawrequest, internalBuffer, MAX_FILESIZE);
-        temp=strtok(internalBuffer," ");
+        temp=strtok(internalBuffer,"|");
         while(temp != NULL){
-            if(strstr(temp,"Host:") == temp){
+            if(strstr(temp,"ipdest:") == temp){
                 strtok(temp,":");
                 hostnameOrIp=strtok(NULL,":");
                 hostnameOrIp=trim(hostnameOrIp);

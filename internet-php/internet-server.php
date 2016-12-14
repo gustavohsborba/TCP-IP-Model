@@ -39,6 +39,17 @@ do {
         DO SOME INERNET LAYER PROCESSING HERE
     ************************************************************** */
 
+    // Get IP protocol data
+    $exploded = explode("|", $request);
+    $ipDestSection = explode(":", $expoded[0]);
+    $ipOrigSection = explode(":", $expoded[1]);
+    $ipdest = $ipDestSection[1];
+    $iporig = $ipOrigSection[1];
+    
+    // Remove IP Packing
+    $request = $exploded[2];
+
+
 	/* Connecting with transport layer */
 	echo "Connecting with transport layer... ";
 	$transportSock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -62,6 +73,8 @@ do {
     /* *************************************************************
         DO SOME INERNET LAYER PROCESSING HERE
     ************************************************************** */
+    $response = "ipdest:$iporig|iporig:$ipdest|$response";
+
 
     // send package to physical layer
 	echo "\nSending package to physical layer...\n";

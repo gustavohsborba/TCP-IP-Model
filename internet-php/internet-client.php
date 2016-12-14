@@ -19,6 +19,7 @@ $INTERNET_PORT_CLIENT = 21112;
 $MAX_BUF = 81920;
 
 
+
 $listener = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 socket_bind($listener, $LOCALHOST_IP, $INTERNET_PORT_CLIENT);
 socket_listen($listener, 5);
@@ -29,12 +30,27 @@ do {
 
     echo "transport layer connection stabilished!\n";
     $buf = socket_read($transportSock, $MAX_BUF);
-    echo "MESSAGE:\n\t$buf\n";
-
-
+    
+    
     /* *************************************************************
         DO SOME INERNET LAYER PROCESSING HERE
     ************************************************************** */
+    $exploded = explode(" ", $buf);
+    $hostname = "";
+    foreach ($exploded as $field) {
+        if(strpos($field, 'Host') !== false){
+            $hostArray = explode(":", $field);
+            $hostname = $hostArray[1];
+        }
+    }
+    $ipdest = gethostbyname( $hostname );
+    $iplocal = getHostByName(getHostName());
+    
+    // FALTA MAC ADDRESS...
+
+    $request = "ipdest:$ipdest|iporig:$iporig|$buf";
+
+
 
 
 	/* Connecting with physical layer */
@@ -45,7 +61,7 @@ do {
 	
     /* Sending package to physical layer and waiting response */
     echo "Sending IP package to physical layer...\n";
-	$bsent = socket_write($physicalSock, $buf);
+	$bsent = socket_write($physicalSock, $request);
     echo "$bsent bytes sent\n";
 
 	/* Receives physical layer response */
@@ -58,10 +74,16 @@ do {
     /* *************************************************************
         DO SOME INERNET LAYER PROCESSING HERE
     ************************************************************** */
+    // Remove IP Packing
+    $exploded = explode("|", $buf);
+    $response = $exploded[2];
+
+
+
 
     // send package to transport layer
 	echo "\nSending package to transport layer...\n";
-	$bsent = socket_write($transportSock, $buf);
+	$bsent = socket_write($transportSock, $response);
     echo "$bsent bytes sent\n";
 
     // closing physical socket
