@@ -52,8 +52,8 @@ while (transportSockRead.hasNextLine()) {
 }
 
 
-writetransportSock.println("Thank you! I'm closing this connection!")
-transportSock.close()
+//writetransportSock.println("Thank you! I'm closing this connection!")
+//transportSock.close()
 //println("Application Received: " + response)
  
 

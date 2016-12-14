@@ -28,11 +28,16 @@ while True:
         # Accept internet layer connection and receive request
         print >> sys.stderr, 'connection from internet layer: ', client_address
         data = net_sock.recv(MAX_BUF)
-        print >>sys.stderr, 'received:\n\t"%s"' % data
+        print >>sys.stderr, 'data:\n\t"%s"' % data
 
         # ##############################################
         # DO SOME TRANSPORT LAYER PROCESSING HERE!!!
         # ##############################################
+        splitdata = data.split(',')
+        data = splitdata[-1]
+        origport = splitdata[0].split(":")[1]
+        destport = splitdata[1].split(":")[1]
+
 
         # Connect with application layer and send request data:
         applayer_address = (LOCALHOST, APPLICATION_PORT_SERVER)
@@ -54,6 +59,7 @@ while True:
         # ##############################################
         # DO SOME TRANSPORT LAYER PROCESSING HERE!!!
         # ##############################################
+        data = "origport:" + str(destport) + ",destport:" + str(origport) + ',' + data;
 
         print >> sys.stderr, '\nResponse:\n%s\n\n' % data
         print >>sys.stderr, 'sending it to Internet layer...'

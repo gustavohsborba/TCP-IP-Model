@@ -26,11 +26,17 @@ while True:
         # Accept Application Layer connection and receive request
         print >> sys.stderr, 'connection from Application Layer: ', app_address
         data = appl_sock.recv(MAX_BUF)
-        print >>sys.stderr, 'received:\n\t"%s"' % data
 
         # ##############################################
         # DO SOME TRANSPORT LAYER PROCESSING HERE!!!
         # ##############################################
+        origport = os.getpid()
+        destport = 8080
+        data = "origport:" + str(origport) + ",destport:" + str(destport) + ',' + data;
+        print >>sys.stderr, 'Data:\n\t"%s"' % data
+
+
+
 
         # Connect with Internet Layer and send request data:
         netlayer_address = (LOCALHOST, INTERNET_PORT_CLIENT)
@@ -52,8 +58,10 @@ while True:
         # ##############################################
         # DO SOME TRANSPORT LAYER PROCESSING HERE!!!
         # ##############################################
-
         print >> sys.stderr, '\nResponse:\n%s\n\n' % data
+        splitdata = data.split(',')
+        data = splitdata[-1]
+
         print >>sys.stderr, 'sending it to Application Layer...'
         sent = appl_sock.send(data)
         sent = appl_sock.send("\n")
@@ -62,7 +70,7 @@ while True:
         sockfd.flush()
 
         # Just to close the connection...
-        data = appl_sock.recv(MAX_BUF)
+        #data = appl_sock.recv(MAX_BUF)
         print >>sys.stderr, '\n\nAnother job well-done!!! Closing connection...\n\n\n'
         net_sock.close()
     finally:
