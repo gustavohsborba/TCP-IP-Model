@@ -8,6 +8,7 @@
 
 
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -38,17 +39,21 @@ void error(const char *msg){
 
 
 
-#define NETWORK_INTERFACE "wlp1s0"
+//#define NETWORK_INTERFACE "wlp1s0"
+#define NETWORK_INTERFACE "wlp7s0"
 //"ethZero0 TCHARAM"
 
 
-#define TRANSPORT_PORT_SERVER 63051
-#define TRANSPORT_PORT_CLIENT 63041
-#define PORT_NUMBER 8761
-#define MIN_MSG_BUFF 256
-#define MIN_MSG_SIZE MIN_MSG_BUFF - 1
-#define BUF_SIZ      576
-#define MAX_BUF	     BUF_SIZ - 1
+#define INTERNET_PORT_SERVER 21111
+#define INTERNET_PORT_CLIENT 21112
+#define PHYSICAL_PORT_SERVER 11111
+#define PHYSICAL_PORT_CLIENT 11112
+#define PORT_NUMBER           9999
+#define MIN_MSG_BUFF          576
+#define MIN_MSG_SIZE          MIN_MSG_BUFF - 1
+#define BUF_SIZ               576
+#define MAX_BUF	              BUF_SIZ - 1
+#define MAX_FILESIZE         65536
 
 
 #define PREAMBLE_SIZE 8
@@ -57,6 +62,102 @@ void error(const char *msg){
 #define CHECKSUM_SIZE 4
 #define MAX_DATA_SIZE MAX_BUF-PREAMBLE_SIZE-(2*MAC_SIZE)-PROTOCOL_SIZE-CHECKSUM_SIZE-2
 
+#define TEMP_FILE     "response.txt"
+#define RESPONSE_SERVER_FILE "response_physical.srv"
+#define REQUEST_SERVER_FILE "request_physical.srv"
+#define RESPONSE_CLIENT_FILE "response_physical.cli"
+#define REQUEST_CLIENT_FILE  "request_physical.cli"
+#define LOCALHOST            "127.0.0.1"
+
+
+
+/*************************************************************************************************
+ *                                  USEFUL FUNCTIONS                                             *
+ *************************************************************************************************/
+
+
+char *ltrim(char *s) 
+{     
+    while(isspace(*s)) s++;     
+    return s; 
+}  
+
+char *rtrim(char *s) 
+{     
+    char* back;
+    int len = strlen(s);
+
+    if(len == 0)
+        return(s); 
+
+    back = s + len;     
+    while(isspace(*--back));     
+    *(back+1) = '\0';     
+    return s; 
+}  
+
+char *trim(char *s) 
+{     
+    return rtrim(ltrim(s));  
+} 
+
+
+
+/*************************************************************************************************
+ *                                  SOCKET FUNCTIONS                                             *
+ *************************************************************************************************/
+
+
+int startListening(int port){
+    int listener, sockfd; // Socket file descriptors
+    struct sockaddr_in serv_addr;
+    // Opening socket to listen to connection:
+    listener = socket(AF_INET, SOCK_STREAM, 0);
+    if (listener < 0)
+        error("ERROR opening socket");
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = htons(port);
+    if (bind(listener, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+        error("ERROR on binding");
+    listen(listener,5);
+    return listener;
+}
+
+int connectSocket(char *hostnameOrIp, int port_number){
+    int sockfd; // socket file descriptor
+    struct hostent *server;
+    struct sockaddr_in serv_addr;
+    struct ifreq ifr;
+
+    // Opening socket to start connection:
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0)
+        error("ERROR opening socket");
+    // resolving host:
+    server = gethostbyname(hostnameOrIp);
+    printf("\nHost solved!");
+    if (server == NULL)
+        error("ERROR, no such host\n");
+    bzero((char *) &serv_addr, sizeof(serv_addr)); // cleans serv_addr
+
+    // configuring and connecting socket:
+    serv_addr.sin_family = AF_INET;
+    bcopy( (char *)server->h_addr,
+           (char *)&serv_addr.sin_addr.s_addr,
+           server->h_length);
+    serv_addr.sin_port = htons(port_number);
+    if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
+        error("ERROR connecting");
+
+    return sockfd;
+}
+
+
+/*************************************************************************************************
+ *                              FRAME DEFINITION AND FUNCTIONS                                   *
+ *************************************************************************************************/
 
 
 struct Frame{
@@ -129,6 +230,39 @@ void printFrame(struct Frame *frame){
     printf("\tchecksum: %s\n",aux);
 }
 
+
+void printFrame2(struct Frame *frame){
+    char aux[BUF_SIZ];
+    bytesToStr(frame->preamble, aux, PREAMBLE_SIZE );
+    printf("Frame:\n\tpreamble: %s\n",aux);
+    bytesToStr(frame->sourceMAC, aux, MAC_SIZE );
+    printf("\tsourceMAC: %s\n",aux);
+    bytesToStr(frame->destinationMAC, aux, MAC_SIZE );
+    printf("\tdestinationMAC: %s\n",aux);
+    bytesToStr(frame->ethernetType, aux, PROTOCOL_SIZE );
+    printf("\tethernetType: %s\n",aux);
+    getData(frame, aux);
+
+    char data[BUF_SIZ*2];
+    int i=0, j=0;
+    for(i=0; i<strnlen(frame->data, MAX_DATA_SIZE); i++){
+        if(aux[i]=='\n' || aux[i]=='\t' || aux[i]==' ')
+            aux[i] = '_';
+        data[j++] = aux[i];
+        if((j%30)==0) {
+            data[j++] = '\n';
+            data[j++] = '\t';
+            data[j++] = '\t';
+        }
+    }
+    
+    data[j+1] = '\0';
+    printf("\tdata: [%s]\n",data);
+
+    bytesToStr(frame->checksum, aux, CHECKSUM_SIZE );
+    printf("\tchecksum: %s\n",aux);
+}
+
 void receiveFrame(struct Frame *frame, int sockfd){
     char buffer[BUF_SIZ];
     bzero(buffer,BUF_SIZ);
@@ -151,7 +285,7 @@ void receiveFrame(struct Frame *frame, int sockfd){
     strncpy (frame->checksum, buffer+offset, CHECKSUM_SIZE);
     if(n!=0){
         printf("Frame Received!!! (%d bytes) \n", (int) n);
-        printFrame(frame);
+        printFrame2(frame);
     }
 }
 
@@ -160,9 +294,9 @@ void sendFrame(struct Frame *frame, int socket, size_t frame_size){
     ssize_t sent_bytes;
     sent_bytes = send(socket, (int*)frame, frame_size, 0);
     if (sent_bytes < 0)
-        error("ERROR writing to socket");
+        error("\tERROR writing to socket\n");
     printf("Frame sent! (%d bytes)\n", (int) sent_bytes );
-    printFrame(frame);
+    printFrame2(frame);
 }
 
 
@@ -170,39 +304,32 @@ void sendFrame(struct Frame *frame, int socket, size_t frame_size){
 
 
 
-/*
- * sendMessage and receiveMessage
- *
- */
-
-
-
+/*************************************************************************************************
+ *                                  MESSAGE  FUNCTIONS                                           *
+ *************************************************************************************************/
+ 
+ 
 void sendMessage(int sockfd, char *msg){
-    char buffer[MIN_MSG_SIZE];
+    char buffer[MAX_FILESIZE];
     ssize_t n;
-    bzero(buffer,MIN_MSG_BUFF);
-    strcpy(buffer, msg);
+    strncpy(buffer, msg, MAX_FILESIZE);
+    buffer[MAX_FILESIZE-1] = '\0';
     n = write(sockfd,buffer,strlen(buffer));
     if (n < 0)
-        error("ERROR sending to socket");
-    printf("%d bytes sent: %s\n", (int)n, buffer);
+        error("\tERROR sending to socket\n");
+    printf("\t%d bytes sent.\n", (int)n);
 }
 
 void receiveMessage(int sockfd, char *msg){
-    char buffer[MIN_MSG_SIZE];
+    char buffer[MAX_FILESIZE];
     ssize_t n;
-    bzero(buffer,MIN_MSG_BUFF);
-    n = read(sockfd,buffer,MIN_MSG_SIZE);
+    bzero(buffer,MAX_FILESIZE);
+    n = read(sockfd,buffer,MAX_FILESIZE);
     if (n < 0)
         error("ERROR reading from socket");
     printf("%d bytes received: %s\n", (int) n, buffer);
     strcpy(msg, buffer);
 }
-
-
-
-
-
 
 
 
@@ -218,6 +345,48 @@ void getMAC(char mac[MAC_SIZE]){
 
     for( s = 0; s < 6; s++ )
         mac[s] = (char) buffer.ifr_hwaddr.sa_data[s];
+}
+
+
+
+
+
+/*************************************************************************************************
+ *                       'SENDING FILES THROUGH FRAMES' FUNCTIONS                                *
+ *************************************************************************************************/
+
+void writeFile(char *buffer, int size, char *filename){
+    FILE* file;
+    int fd;
+    file = fopen(filename,"wb");
+    fd = fileno(file);
+    if( !file | fd < 0)
+        error("Couldn't create file!");
+    size_t len = strlen(buffer);
+    printf("Sending data through physical medium...\n");
+    if ((int) len <= 0) error("LEN <= 0 from WRITE FILE");
+    else fwrite(buffer, sizeof(char), len, file);
+    fclose(file);
+}
+
+int readFile(char *buffer, char *filename){
+    FILE* file;
+    int fd;
+    file = fopen(filename,"rb");
+    fd = fileno(file);
+    if( !file | fd < 0)
+        error("Couldn't create file!");
+    bzero(buffer, MAX_FILESIZE);
+    fseek (file, 0, SEEK_END);
+    int length = ftell (file);
+    fseek (file, 0, SEEK_SET);
+
+    printf("Reading data from physical medium...\n");
+    size_t size = fread(buffer, sizeof(char), length, file);
+    buffer[size] = '\0';
+    printf("%d bytes Read.\n", (int)size);
+    fclose(file);
+    return (int) size;
 }
 
 

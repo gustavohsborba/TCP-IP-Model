@@ -10,87 +10,82 @@
 #include "physical.h"
 
 
+
+
+
 int main(int argc, char *argv[])
 {
-    int listener, sockfd; // Socket file descriptors
-    struct sockaddr_in serv_addr, cli_addr, network_addr;
-    socklen_t clilen, network_layer;
+    int listener, // Socket file descriptors
+        sockfd,   // a listener, a communication socket,
+        sockfdil; // and a internet layer socket
+    struct sockaddr_in client_addr;
+    socklen_t client_len = 0;
     char this_mac[MAC_SIZE], cli_mac[MAC_SIZE];
+    char internalBuffer[MAX_FILESIZE];
 
-    // Opening socket to listen to connection:
-    listener = socket(AF_INET, SOCK_STREAM, 0);
-    if (listener < 0)
-        error("ERROR opening socket");
-
-    // preparing socket:
-    bzero((char *) &serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(PORT_NUMBER);
-    if (bind(listener, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-        error("ERROR on binding");
-    listen(listener,5);
+    printf("Server's Physical layer started!\n");
+    listener = startListening(PORT_NUMBER);
 
     while(1){
 
-        char buffer[BUF_SIZ], filename[BUF_SIZ];
-        struct Frame frame = {};
-
         // Accepting Connection. Receiving message request for frame size:
-        sockfd = accept(listener, (struct sockaddr *) &cli_addr,  &clilen);
+        printf("Server's Physical layer listening to port %d...\n", PORT_NUMBER);
+        sockfd = accept(listener, (struct sockaddr *) &client_addr,  &client_len);
         if (sockfd < 0)
             error("ERROR on accept");
+        printf("\nConnection stabilished!\n");
+
+        char buffer[BUF_SIZ];
+        struct Frame frame = {};
 
         // Cheating to get client's MAC addres.
         // THE CORRECT WAY IS USING ARP COMMAND.
-        /*char mac[10];
-        bzero(mac,10);
-        receiveMessage(sockfd, mac);
-        strncpy(cli_mac, mac, 6);
-        getMAC(mac);
-        bytesToStr(mac, buffer, 6);
-        mac[6] = '\0';
-        sendMessage(sockfd, mac);
-        strncpy(this_mac, mac, 6);*/
-
-
+        bzero(buffer,10);
+        receiveMessage(sockfd, buffer);
+        strncpy(cli_mac, buffer, 6);
+        getMAC(buffer);
+        buffer[6] = '\0';
+        sendMessage(sockfd, buffer);
+        strncpy(this_mac, buffer, 6);
 
         bzero(buffer,BUF_SIZ);
         receiveMessage(sockfd, buffer);
 
-        // Sending frame size response:
+        // Sending frame size response: 
+        printf("\nNegotiating frame size...");
         bzero(buffer, BUF_SIZ);
         sprintf(buffer,"%d",MAX_BUF);
         sendMessage(sockfd, buffer);
-
-        // Receiving filename:
-        bzero(filename,BUF_SIZ);
-        receiveFrame(&frame, sockfd);
-        strcpy(filename, frame.data);
-        strcat(filename, "2");
-        printf("File Name should be %s\n", filename);
-
-        // Sending OK message
-        getMAC(this_mac);
-        getMAC(cli_mac);
-        strcpy(buffer,"Ready to Transfer Files...");
-        createFrame(&frame, buffer, this_mac, cli_mac);
-        sendFrame(&frame, sockfd, frameSize(&frame));
-
         
         // Receiving request:
-        receiveFile(sockfd, (char*) "request.srv");
-
+        printf("\nReceiving request...");
+        receiveFile(sockfd, (char*) REQUEST_SERVER_FILE);
+        bzero(internalBuffer,MAX_FILESIZE);
+        readFile(internalBuffer, REQUEST_SERVER_FILE);
+        
         // calls upper layers:
-        printf("\n\ncalling system\n");
-        system("python udpserver.py");
-	    //system("scala server-side.scala");
+        printf("\nSending request to upper layers...\n");
+        char *localhost = LOCALHOST;
+        sockfdil = connectSocket(localhost, INTERNET_PORT_SERVER);
+        sendMessage(sockfdil, internalBuffer);
 
         // After upper layers complete processing, get response:
-        sendFile(sockfd, "response.srv", this_mac, cli_mac);
-	    remove( "response.srv" );
+        printf("\nWaiting upper layers response...");
+        bzero(internalBuffer,MAX_FILESIZE);
+        receiveMessage(sockfdil, internalBuffer);
+        printf("\nSending message trough physical medium...");
+
+        // This simulates physical layer Sending package though medium...
+        writeFile(internalBuffer, strlen(internalBuffer), RESPONSE_SERVER_FILE);
+        // Send file to client physical layer
+        sendFile(sockfd, RESPONSE_SERVER_FILE, this_mac, cli_mac);
+
+        remove( REQUEST_SERVER_FILE );
+	    remove( RESPONSE_SERVER_FILE );
 
         close(sockfd);
+        close(sockfdil);
+        printf("\nDONE!\n\n\n");
         // return to loop and wait for next connection
     }
     return 0;
