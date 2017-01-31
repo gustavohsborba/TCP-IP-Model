@@ -25,17 +25,22 @@ while True:
     try:
         # Accept Application Layer connection and receive request
         print >> sys.stderr, 'connection from Application Layer: ', app_address
-        data = appl_sock.recv(MAX_BUF)
+        rawdata = appl_sock.recv(MAX_BUF)
 
         # ##############################################
         # DO SOME TRANSPORT LAYER PROCESSING HERE!!!
         # ##############################################
         origport = os.getpid()
         destport = 8080
-        data = "origport:" + str(origport) + ",destport:" + str(destport) + ',' + data;
+        
+        data = "origport:" + str(origport) + ",destport:" + str(destport)
+        data = data + ',' + 'seq:00,ack:00,data:' + rawdata;
         print >>sys.stderr, 'Data:\n\t"%s"' % data
 
-
+        # FIRST: Send SYN
+        # SECOND: Receive SYN + ACK
+        # THIRD: Send SYN + package
+        # Receive ACK ...
 
 
         # Connect with Internet Layer and send request data:
@@ -54,6 +59,10 @@ while True:
         #Getting Internet Layer response and sending back to Application Layer
         print >>sys.stderr, 'Data sent. Receiving response...'
         data = net_sock.recv(MAX_BUF)
+
+
+        # NOW: RECEIVE FIN
+        # SEND ACK
 
         # ##############################################
         # DO SOME TRANSPORT LAYER PROCESSING HERE!!!

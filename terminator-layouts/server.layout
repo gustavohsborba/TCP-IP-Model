@@ -1,0 +1,68 @@
+[global_config]
+[keybindings]
+[layouts]
+  [[default]]
+    [[[child0]]]
+      fullscreen = False
+      last_active_term = 5d2180e6-e011-494f-82c6-c362dde11dc5
+      last_active_window = True
+      maximised = True
+      order = 0
+      parent = ""
+      position = 40:0
+      size = 1326, 742
+      title = gustavo@HAL9000: ~
+      type = Window
+    [[[child1]]]
+      order = 0
+      parent = child0
+      position = 369
+      ratio = 0.499326145553
+      type = VPaned
+    [[[child2]]]
+      order = 0
+      parent = child1
+      position = 182
+      ratio = 0.4972899729
+      type = VPaned
+    [[[child5]]]
+      order = 1
+      parent = child1
+      position = 184
+      ratio = 0.501351351351
+      type = VPaned
+    [[[terminal3]]]
+      command = scala application-server.scala; bash;
+      order = 0
+      parent = child2
+      profile = default
+      type = Terminal
+      uuid = 5d2180e6-e011-494f-82c6-c362dde11dc5
+    [[[terminal4]]]
+      command = python transport-server.py; bash;
+      order = 1
+      parent = child2
+      profile = default
+      type = Terminal
+      uuid = a5a5acac-ed48-43a0-b165-d94303cbed67
+    [[[terminal6]]]
+      command = php -f internet-server.php; bash;
+      order = 0
+      parent = child5
+      profile = default
+      type = Terminal
+      uuid = bff9b226-9859-437e-908a-f5601bd72522
+    [[[terminal7]]]
+      command = ./physical-server; bash;
+      order = 1
+      parent = child5
+      profile = default
+      type = Terminal
+      uuid = 718e3bec-fff2-4b91-9f0f-204cdac4524b
+[plugins]
+[profiles]
+  [[default]]
+    background_darkness = 0.93
+    background_image = None
+    background_type = transparent
+    split_to_group = True

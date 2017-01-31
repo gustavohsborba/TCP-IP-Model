@@ -68,8 +68,5 @@ echo "${B}Done.$NC"
 
 
 echo "{B} Installing Terminator... $NC"
-sudo apt-get install terminator
+apt-get install terminator
 echo "{B} Done. $NC"
-
-echo "Please, run the following command as your user:"
-echo "mv terminator.layout ~/.config/terminator/config"
