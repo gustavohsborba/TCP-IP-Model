@@ -1,0 +1,221 @@
+\documentclass[11pt]{article}
+
+\usepackage[brazil]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+%\usepackage{subfigure}
+%\usepackage{a4wide}
+\usepackage{fancyhdr}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{tikz}
+\usepackage{empheq}
+\usetikzlibrary{trees}
+%\usepackage{multirow}
+\usepackage{amssymb,amsmath}
+\usepackage{amsthm,amsfonts}
+\usepackage{float}
+\graphicspath{ {images/} }
+\usepackage{listings}
+\usepackage{color}
+
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0.1pt}
+\renewcommand{\footrulewidth}{0.1pt}
+
+
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\lstset{ %
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  columns=flexible,
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  %deletekeywords={...},           % if you want to delete keywords from the given language
+  %escapeinside={\%*}{*)},         % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=leftline,	               % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=Make,                   % the language of the code
+  %otherkeywords={*,...},          % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=10pt,                  % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  %rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=4,	                   % sets default tabsize to 2 spaces
+  %title=\lstname                  % show the filename of files included with \lstinputlisting; also try caption instead of title
+  xleftmargin=1cm
+}
+
+
+
+
+\lhead{Implementação da pilha TCP/IP}
+\rhead{\thepage} 
+\lfoot{ Ana Cláudia, Bruno, Gustavo, Thiago }
+\rfoot{ \today }
+\cfoot{}
+
+
+\begin{document}
+\thispagestyle{empty}
+
+\begin{center}
+\begin{minipage}[l]{10cm}{
+\center
+Redes de Computadores \\
+2016/02 \\
+}\end{minipage}
+ \vfill
+ \begin{minipage}[l]{11cm}{
+   \begin{center}
+   \Large{Trabalho Prático: \\ Implementação de uma Pilha TCP/IP Simulada}
+   \end{center}
+}\end{minipage}
+\end{center}
+ \vspace*{8cm}
+ \begin{center}
+ \begin{minipage}[l]{10cm}{
+ \center Ana Cláudia, Bruno Maciel, Gustavo Borba, Thiago Alexandre\\
+ Belo Horizonte, \today \\
+ }
+ \end{minipage}
+ \end{center}
+
+\newpage
+\thispagestyle{empty}
+\tableofcontents
+
+\newpage
+\clearpage
+\setcounter{page}{1}
+
+\section{Introdução}
+
+    O presente trabalho apresenta a implementação de uma pilha TCP/IP simulada. Não é a intenção desse trabalho obter um modelo de performance, mas um modelo didático que simule razoavelmente bem os protocolos discutidos na disciplina de Redes de Computadores, do curso de Engenharia de Computação do CEFET-MG. 
+    
+    Proposto por Sandro Renato Dias [https://sites.google.com/site/sandrord] [http://lattes.cnpq.br/5300421458375793], este trabalho foi desenvolvido por um grupo de quatro integrantes:
+    
+    \begin{itemize}
+        \item Gustavo Henrique de Souza Borba [gustavohsborba@gmail.com]
+        \item Bruno Marques Maciel [bmarques.maciel@gmail.com]
+        \item Thiago Alexandre de Souza Silva [thiagoalexsilva93@gmail.com]
+        \item Ana Cláudia Gomes de Mendonça [gmanaclaudia@gmail.com]
+    \end{itemize}
+    
+    O Código fonte deste trabalho pode ser encontrado na página do github: \\ [https:\/\/github.com\/gustavohsborba\/TCP-IP-Model]. Infelizmente, este trabalho não é multiplataforma, e só é passível de ser executável em sistemas linux.
+	
+\section{Executando o Simulador}
+
+	\subsection{Baixando código-fonte}
+
+        O Github é uma plataforma de versionamento de códigos gratuita. Dessa forma, basta acessar a referida página e realizar o download do código-fonte. Você pode optar também por clonar o projeto, via HTTPS, com o comando:
+        
+\begin{lstlisting}
+git clone https://github.com/gustavohsborba/TCP-IP-Model.git
+\end{lstlisting} 
+		
+	\subsection{Instalando as Dependências}
+	
+	    Foi criado um script para instalar automaticamente todas as dependências do projeto. \\
+	    Acesse a pasta do trabalho pelo terminal. No modo root, execute o script install\_dependencies.sh para instalar as linguagens e frameworks necessários para a execução das camadas. \\
+	    Caso esteja ressabiado sobre executar um comando de superusuário em um terminal, Não há motivos para preocupações: Verificado o script, nota-se que ele apenas instala as linguagens python, scala, o compilador gcc, e algumas outras dependências. 
+	
+	\subsection{Alterando variáveis importantes}
+    
+        Algumas variáveis do simulador acabaram por depender do sistema que o executa. Primeiramente, o sistema é burro: ele não sabe procurar o seu IP (motivo: falta de paciência para fazer um parser do ifconfig) para que o progrma do cliente funcione, os IPs devem ser MANUALMENTE setados diretamente no código:
+        
+        \begin{itemize}
+            \item No arquivo /application-scala/MiniBrowser.scala, por volta da linha 170: \\ 
+                    var localhostAddress = "127.0.0.1"
+            \item No arquivo /application-scala/application-client.scala, por volta da linha 18: \\
+                    var localhostAddress = "127.0.0.1"
+            \item No arquivo /internet-php/internet-client.php, por volta da linha 7: \\
+                    \$LOCALHOST\_IP = '127.0.0.1';
+        \end{itemize}
+        
+        Também é necessário alterar a variável que indica o nome de sua interface de rede, para um comando bem específico que identifica o MAC Address da máquina. Para saber o nome da sua interface de rede, execute o comando ifconfig, e verifique a interface que aparece um IP privado, como no exemplo a seguir:
+        
+\begin{lstlisting}
+ifconfig
+enp2s0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        ether 50:b7:c3:00:5c:89  txqueuelen 4096  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1  (Loopback Local)
+        RX packets 897  bytes 68858 (67.2 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 897  bytes 68858 (67.2 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth0:   flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.0.36  netmask 255.255.255.0  broadcast 192.168.0.255
+        inet6 2804:14c:5b91:967a:c685:8ff:fe68:11ef  prefixlen 64  scopeid 0x0<global>
+        inet6 fe80::c685:8ff:fe68:11ef  prefixlen 64  scopeid 0x20<link>
+        ether c4:85:08:68:11:ef  txqueuelen 4096  (Ethernet)
+        RX packets 428248  bytes 385214800 (367.3 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 172962  bytes 22292022 (21.2 MiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+\end{lstlisting} 
+        
+        E, no arquivo /physical-c/physical.h, por volta da linha 39 (um dos primeiros #define do código), altere a linha que define a interface de rede para utilizar o valor encontrado no comando ifconfig: 
+
+\begin{lstlisting}
+#define NETWORK_INTERFACE "eth0"
+\end{lstlisting}  
+        
+
+	\subsection{Finalmente, Executando o Programa}
+	    Em um terminal, entre na pasta test e execute o arquivo test.sh. Caso haja dúvidas sobre sua execução, execute o comando:
+	    
+\begin{lstlisting}
+./test.sh -h
+\end{lstlisting}
+	
+	    Essa opção mostrará o menu de ajuda, que exibe todas as opções possíveis do arquivo test.sh
+	
+	
+\section{Decisões de Implementação}
+	
+	\subsection{A abordagem utilizada na implementação}
+		
+		O analisador léxico da foi implementado na classe \verb Scanner e analisa caractere por caractere do arquivo fonte
+		procurando casar os caracteres acumulados com o padrão de formação de um Token. Dentro da classe \verb Scanner existe
+		uma tabela que contem as palavras reservadas da linguagem.
+		
+	\subsection{A Estrutura do Projeto}
+		
+		O projeto segue a estrutura básica de todo projeto em C++, contendo uma pasta \textbf{include} e, dentro desta, separados por módulos, os headers (.h) com as declarações das classes. A pasta \textbf{src} contém a implementação das classes, bem como a função principal \textbf{main}:
+		
+		\begin{verbatim}
+			include/ -- Pasta para os headers
+			include/frontend -- pasta contendo as definições para os analisadores.
+			include/backend -- ainda por fazer.
+			include/test -- Pasta com os headers referentes aos testes unitários
+			src/ -- Implementação das classes
+			tests/ -- Pasta com a implementação dos testes unitários 
+		\end{verbatim}
+		
+\section{Resultados dos testes}
+
+
+
+\end{document} 
