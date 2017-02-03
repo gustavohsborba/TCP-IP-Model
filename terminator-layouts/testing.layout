@@ -84,7 +84,7 @@
       type = Terminal
       uuid = b76e4560-c253-474f-a809-702002fb943b
     [[[terminal4]]]
-      command = scala application-client.scala; bash;
+      command = scala MiniBrowser.scala; bash;
       order = 0
       parent = child3
       profile = default

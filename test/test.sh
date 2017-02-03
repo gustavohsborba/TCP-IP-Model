@@ -56,7 +56,7 @@ function help_text {
 	echo -e '\t-c\tClean Workspace: Deletes files in test folder'
 	echo -e '\t-b\tBuild all. copy files into test folder and builds everything.'
 	echo -e '\t-t PARAMETER\tConfigure environment. PARAMETER is needed.'
-	echo -e '\t\t\taccept values:\n\t\t\trestore, testing, server, client, hop'
+	echo -e '\t\t\taccept values:\n\t\t\trestore, testing, server, client, server_udp, client_udp'
 	echo -e '\t-x\tExecute'
 	echo -e '\t-h\tshows this help text'
 }

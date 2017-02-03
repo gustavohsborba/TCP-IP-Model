@@ -32,28 +32,28 @@
       ratio = 0.501351351351
       type = VPaned
     [[[terminal3]]]
-      command = echo "No need for an application layer in a hop"; bash;
+      command = scala application-client.scala; bash;
       order = 0
       parent = child2
       profile = default
       type = Terminal
       uuid = 5d2180e6-e011-494f-82c6-c362dde11dc5
     [[[terminal4]]]
-      command = echo "No need for a transport layer in a hop"; bash;
+      command = python udpclient.py; bash;
       order = 1
       parent = child2
       profile = default
       type = Terminal
       uuid = a5a5acac-ed48-43a0-b165-d94303cbed67
     [[[terminal6]]]
-      command = php -f internet-hop.php; bash;
+      command = php -f internet-client.php; bash;
       order = 0
       parent = child5
       profile = default
       type = Terminal
       uuid = bff9b226-9859-437e-908a-f5601bd72522
     [[[terminal7]]]
-      command = ./physical-hop; bash;
+      command = ./physical-client; bash;
       order = 1
       parent = child5
       profile = default

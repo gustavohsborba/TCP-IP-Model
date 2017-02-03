@@ -6,6 +6,15 @@ import javax.swing._
 import javax.swing.event._
 import javax.swing.text.html._
 import MiniBrowser._
+import java.net._
+import java.io._
+import scala.io._
+import java.lang._
+import java.util._
+import scala.sys.process._
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.FileSystems;
 //remove if not needed
 import scala.collection.JavaConversions._
 /**
@@ -19,7 +28,7 @@ object MiniBrowser {
 
   def main(args: Array[String]) {
     var browser = new MiniBrowser()
-    browser.show()
+    browser.setVisible(true)
   }
 }
 
@@ -122,7 +131,8 @@ class MiniBrowser extends JFrame("Mini Browser") with HyperlinkListener {
     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
     try {
       var currentUrl = displayEditorPane.getPage
-      displayEditorPane.setPage(pageUrl)
+      var pageText = pegaPagina(pageUrl)
+      displayEditorPane.setText(pageText)
       var newUrl = displayEditorPane.getPage
       locationTextField.setText(newUrl.toString)
       updateButtons()
@@ -149,4 +159,50 @@ class MiniBrowser extends JFrame("Mini Browser") with HyperlinkListener {
       }
     }
   }
+
+  def pegaPagina(pageUrl: URL): String = {
+  val PHYSICAL_PORT_SERVER = 11111
+    val PHYSICAL_PORT_CLIENT = 11112
+    val INTERNET_PORT_SERVER = 21111
+    val INTERNET_PORT_CLIENT = 21112
+    val TRANSPORT_PORT_SERVER = 31111
+    val TRANSPORT_PORT_CLIENT = 31112//PHYSICAL_PORT_CLIENT//
+    val APPLICATION_PORT_SERVER = 41111
+    val APPLICATION_PORT_CLIENT = 41112
+
+    var localhostAddress = "127.0.0.1"
+    var serverAddress = ""
+    var page = ""
+
+    serverAddress = pageUrl.getHost()
+    page = pageUrl.getPath()
+    
+    val request = "GET " + page + " HTTP/1.1 Host:" + serverAddress
+    //println("Application started! Request is:" + request)
+    Thread sleep 5000
+
+    val transportSock = new Socket(localhostAddress,TRANSPORT_PORT_CLIENT)
+    val writetransportSock = new PrintStream(transportSock.getOutputStream())
+    //println("Connected to Transport layer on port " + TRANSPORT_PORT_CLIENT + ". Sending request...")
+    writetransportSock.print(request)
+    writetransportSock.flush()
+
+    //wait for layer response
+    //println("Application waiting for response...")
+    var response:String = "";
+    val transportSockRead = new Scanner(transportSock.getInputStream())
+
+    //println("GOT RESPONSE:")
+    var texto:String = "";
+    while (transportSockRead.hasNextLine()) {
+        val line = transportSockRead.nextLine()
+        texto += line
+    }
+    texto
+  }
+
+
 }
+
+var mini = MiniBrowser
+mini.main(null)
