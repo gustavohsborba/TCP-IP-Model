@@ -58,23 +58,27 @@ while True:
     data = splitdata[-1]
     origport = splitdata[0].split(":")[1]
     destport = splitdata[1].split(":")[1]
+    seq = str(eval(splitdata[2].split(":")[1]) + 1)
+    ack = splitdata[3].split(":")[1]
 
+    rawdata = ''
     if 'SYN' in data:
-        data = 'SYNACK'
+        rawdata = 'SYNACK'
     elif 'FIN' in data:
-        data = 'ACK'
+        rawdata = 'ACK'
     else:
-        data = send_and_receive_from_application_layer(data)
+        rawdata = send_and_receive_from_application_layer(data)
 
-    data = "origport:" + str(destport) + ",destport:" + str(origport) + ',' + data;
+    data = "origport:" + str(destport) + ",destport:" + str(origport)
+    data = data + ',' + 'seq:' + seq+ ',ack:' + ack+ ',data:' + rawdata;
     #  ##############################################
 
-    print >> sys.stderr, '\nResponse:\n%s\n\n' % data
+    print >> sys.stderr, '\nResponse:\n\t%s\n' % data
     print >>sys.stderr, 'sending it to Internet layer...'
     sent = net_sock.send(data)
     sent = net_sock.send("\n")
     sent = net_sock.send("")
-    
+
     print >>sys.stderr, '\n\nAnother job well-done!!! Closing connection...\n\n\n'
     sockfd = os.fdopen(net_sock.fileno())
     sockfd.flush()
