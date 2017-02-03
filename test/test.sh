@@ -31,7 +31,7 @@ function config_terminator
 	cp ~/.config/terminator/config ../terminator-layouts/config.old
 	if [ $1 == "restore" ]; then
 		cp ../terminator-layouts/config.old ~/.config/terminator/config
-	elif [ $1 != "server" -a $1 != "client" -a $1 != "hop" -a $1 != "testing" ]; then
+	elif [ $1 != "server" -a $1 != "client" -a $1 != "client_udp" -a $1 != "server_udp" -a $1 != "client_browser" -a $1 != "testing" ]; then
 		echo "Argumento $1 inválido! "
 		exit
 	else
@@ -56,7 +56,8 @@ function help_text {
 	echo -e '\t-c\tClean Workspace: Deletes files in test folder'
 	echo -e '\t-b\tBuild all. copy files into test folder and builds everything.'
 	echo -e '\t-t PARAMETER\tConfigure environment. PARAMETER is needed.'
-	echo -e '\t\t\taccept values:\n\t\t\trestore, testing, server, client, server_udp, client_udp'
+	echo -e '\t\t\taccept values:\n\t\t\trestore, testing, server, client,' 
+	echo -e '\t\t\tserver_udp, client_udp, client_browser'
 	echo -e '\t-x\tExecute'
 	echo -e '\t-h\tshows this help text'
 }
