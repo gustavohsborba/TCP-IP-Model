@@ -18,7 +18,10 @@
   Recebe a quantidade de bits
   Envia em pacotes da sugerida quantidade
 
+    FALTA:
 
+    Delinear o comando ARP separado do fluxo normal de execução.
+    Delinear o comando de verificar tamanho do buffer do fluxo normal de execução.
 
 */
 

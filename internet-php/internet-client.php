@@ -20,6 +20,17 @@ $MAX_BUF = 81920;
 
 
 
+
+function send_message($data, $header, $size_limit){
+
+}
+
+function receive_message(){
+
+}
+
+
+
 $listener = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 socket_bind($listener, $LOCALHOST_IP, $INTERNET_PORT_CLIENT);
 socket_listen($listener, 5);
@@ -35,6 +46,7 @@ do {
     /* *************************************************************
         DO SOME INERNET LAYER PROCESSING HERE
     ************************************************************** */
+    $buf = preg_replace('~[\r\n]+~', '', $buf);
     $exploded = explode(" ", $buf);
     $hostname = "";
     foreach ($exploded as $field) {
@@ -46,11 +58,13 @@ do {
     $ipdest = gethostbyname( $hostname );
     $iplocal = getHostByName(getHostName());
     
-    // FALTA MAC ADDRESS...
+    
+    /* *************************************************************
+        INERNET LAYER PROCESSING: adds IP data on package and delivers.
+    ************************************************************** */
 
-    $request = "ipdest:$ipdest|iporig:$iporig|$buf";
-
-
+    $request = "ipdest:$ipdest|iporig:$iplocal|$buf";
+    echo "MESSAGE:\n\t$request\n";
 
 
 	/* Connecting with physical layer */
@@ -72,13 +86,12 @@ do {
 
     
     /* *************************************************************
-        DO SOME INERNET LAYER PROCESSING HERE
+        INERNET LAYER PROCESSING: removes IP data of package and delivers.
     ************************************************************** */
+
     // Remove IP Packing
     $exploded = explode("|", $buf);
     $response = $exploded[2];
-
-
 
 
     // send package to transport layer

@@ -19,15 +19,30 @@ val APPLICATION_PORT_SERVER = 41111
 val APPLICATION_PORT_CLIENT = 41112
 
 var localhostAddress = "127.0.0.1"
-var serverAddress = "127.0.0.1"
-var page = "/index.html"
-var requestedPage = serverAddress + page
+var serverAddress = ""
+var page = ""
 
 
 if(args.length >= 1)
 	serverAddress = args(0)
 if(args.length >= 2)
 	page = args(1)
+
+if(serverAddress.isEmpty || page.isEmpty){
+	println("Insert server IP address:")
+	serverAddress = scala.io.StdIn.readLine()
+	println("Insert webpage:")
+	page = scala.io.StdIn.readLine()
+}
+
+if(serverAddress.isEmpty || serverAddress.equals("")){
+	serverAddress = "127.0.0.1"
+}
+if(page.isEmpty || page.equals("")){
+	page = "/index.html"
+}
+
+
 val request = "GET " + page + " HTTP/1.1 Host:" + serverAddress
 println("Application started! Request is:" + request)
 Thread sleep 5000

@@ -36,16 +36,21 @@ do {
 
 
     /* *************************************************************
-        DO SOME INERNET LAYER PROCESSING HERE
+        SOME INERNET LAYER PROCESSING HERE
     ************************************************************** */
 
     // Get IP protocol data
     $exploded = explode("|", $request);
-    $ipDestSection = explode(":", $expoded[0]);
-    $ipOrigSection = explode(":", $expoded[1]);
+    $ipDestSection = explode(":", $exploded[0]);
+    $ipOrigSection = explode(":", $exploded[1]);
     $ipdest = $ipDestSection[1];
     $iporig = $ipOrigSection[1];
     
+
+    // HERE: IF ipDest not This IP, Follow next hop.
+    // ELSE: Use the common flux.
+
+
     // Remove IP Packing
     $request = $exploded[2];
 
@@ -71,7 +76,7 @@ do {
 
 
     /* *************************************************************
-        DO SOME INERNET LAYER PROCESSING HERE
+        INERNET LAYER PROCESSING: Adds IP data to package and delivers.
     ************************************************************** */
     $response = "ipdest:$iporig|iporig:$ipdest|$response";
 
