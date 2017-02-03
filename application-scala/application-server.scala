@@ -79,7 +79,7 @@ while (true) {
 	}
 	transpSockWrite.print(response)
     transpSockWrite.flush()
-    println("Response sent!")
+    println("Response sent:\n\n" + response)
     
     transportSock.close
 }

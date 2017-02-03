@@ -21,16 +21,6 @@ $MAX_BUF = 81920;
 
 
 
-function send_message($data, $header, $size_limit){
-
-}
-
-function receive_message(){
-
-}
-
-
-
 $listener = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 socket_bind($listener, $LOCALHOST_IP, $INTERNET_PORT_CLIENT);
 socket_listen($listener, 5);
