@@ -87,7 +87,7 @@ Redes de Computadores \\
  \vspace*{8cm}
  \begin{center}
  \begin{minipage}[l]{10cm}{
- \center Ana Cláudia, Bruno Maciel, Gustavo Borba, Thiago Alexandre\\
+ \center Ana Cláudia \\Bruno Maciel\\ Gustavo Borba\\ Thiago Alexandre\\
  Belo Horizonte, \today \\
  }
  \end{minipage}
@@ -114,7 +114,7 @@ Redes de Computadores \\
         \item Ana Cláudia Gomes de Mendonça [gmanaclaudia@gmail.com]
     \end{itemize}
     
-    O Código fonte deste trabalho pode ser encontrado na página do github: \\ [https:\/\/github.com\/gustavohsborba\/TCP-IP-Model]. Infelizmente, este trabalho não é multiplataforma, e só é passível de ser executável em sistemas linux.
+    O Código fonte deste trabalho pode ser encontrado na página do github: \\ [https\:\/\/github.com\/gustavohsborba\/TCP-IP-Model]. Infelizmente, este trabalho não é multiplataforma, e só é passível de ser executável em sistemas linux.
 	
 \section{Executando o Simulador}
 
@@ -130,17 +130,19 @@ git clone https://github.com/gustavohsborba/TCP-IP-Model.git
 	
 	    Foi criado um script para instalar automaticamente todas as dependências do projeto. \\
 	    Acesse a pasta do trabalho pelo terminal. No modo root, execute o script install\_dependencies.sh para instalar as linguagens e frameworks necessários para a execução das camadas. \\
-	    Caso esteja ressabiado sobre executar um comando de superusuário em um terminal, Não há motivos para preocupações: Verificado o script, nota-se que ele apenas instala as linguagens python, scala, o compilador gcc, e algumas outras dependências. 
+	    Caso esteja ressabiado sobre executar um comando de superusuário em um terminal, Não há motivos para preocupações: Verificado o script, nota-se que ele apenas instala as linguagens python, scala, o compilador gcc, um gerenciador de terminais chamado Terminator, e algumas outras dependências. 
 	
 	\subsection{Alterando variáveis importantes}
     
-        Algumas variáveis do simulador acabaram por depender do sistema que o executa. Primeiramente, o sistema é burro: ele não sabe procurar o seu IP (motivo: falta de paciência para fazer um parser do ifconfig) para que o progrma do cliente funcione, os IPs devem ser MANUALMENTE setados diretamente no código:
+        Algumas variáveis do simulador acabaram por depender do sistema operacional que o executa. O motivo é simples: a aplicação <ainda> não sabe procurar o seu IP e interface de rede (uma sugestão futura é implementar um parser do comando ifconfig que seta essas configurações automaticamente. para que o progrma do cliente funcione, os IPs devem ser manualmente setados diretamente no código:
         
         \begin{itemize}
             \item No arquivo /application-scala/MiniBrowser.scala, por volta da linha 170: \\ 
                     var localhostAddress = "127.0.0.1"
             \item No arquivo /application-scala/application-client.scala, por volta da linha 18: \\
                     var localhostAddress = "127.0.0.1"
+            \item No arquivo /transport-python/transport-client.py, por volta da linha 7: \\
+                    LOCALHOST = "127.0.0.1"
             \item No arquivo /internet-php/internet-client.php, por volta da linha 7: \\
                     \$LOCALHOST\_IP = '127.0.0.1';
         \end{itemize}
@@ -176,7 +178,7 @@ eth0:   flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 \end{lstlisting} 
         
-        E, no arquivo /physical-c/physical.h, por volta da linha 39 (um dos primeiros #define do código), altere a linha que define a interface de rede para utilizar o valor encontrado no comando ifconfig: 
+        E, no arquivo /physical-c/physical.h, por volta da linha 39 (um dos primeiros \#define do código), altere a linha que define a interface de rede para utilizar o valor encontrado no comando ifconfig: 
 
 \begin{lstlisting}
 #define NETWORK_INTERFACE "eth0"
@@ -195,24 +197,58 @@ eth0:   flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
 	
 \section{Decisões de Implementação}
 	
+	\subsection{A Estrutura do Projeto}
+		
+		Além do código-fonte do projeto, realizado em uma linguagem diferente para cada camada, o sistema conta com uma ferramenta útil para dividir terminais, chamada Terminator. Esta ferramenta permite que se abram vários terminais simultâneos ao mesmo tempo, de forma a facilitar o processo de execução do projeto ao executar todas as camadas necessárias com apenas um comando.
+		
+		O código-fonte do pojeto contém uma pasta para cada camada do protocolo, uma pasta para rodar os testes, e uma pasta que armazena os layouts do software Terminator. Cada uma das pastas contém, ao menos, dois arquivos - um para o servidor e um para cliente:
+		
+		\begin{itemize}
+            \item application-scala
+    		\begin{itemize}
+                \item application-client.scala
+                \item application-server.scala
+                \item MiniBrowser.scala
+                \item index.html
+                \item 404.html
+            \end{itemize}
+            \item transport-python
+    		\begin{itemize}
+                \item transport-client.py
+                \item transport-server.py
+            \end{itemize}
+            \item internet-php
+    		\begin{itemize}
+                \item internet-client.php
+                \item internet-server.php
+            \end{itemize}
+            \item physical-c
+    		\begin{itemize}
+                \item physical-client.c
+                \item physical-server.c
+                \item physical.h
+            \end{itemize}
+            \item test
+            \begin{itemize}
+                \item test.sh
+            \end{itemize}
+            \item terminator-layouts
+    		\begin{itemize}
+                \item client.layout	
+                \item server.layout
+                \item testing.layout
+            \end{itemize}
+        \end{itemize}
+		
+		Outros arquivos necessários para a execução - As páginas utilizadas pela aplicação - foram adicionados nas pastas usadas pela sua respectiva camada da pilha. Layouts para a aplicação Terminator foram criados para que se pudesse rodar o programa de diferentes formas: Como cliente, como servidor, como teste (abrindo na mesma máquina as camadas para as quatro camadas de cada pilha - totalizando oito terminais), etc.
+	
 	\subsection{A abordagem utilizada na implementação}
 		
 		O analisador léxico da foi implementado na classe \verb Scanner e analisa caractere por caractere do arquivo fonte
 		procurando casar os caracteres acumulados com o padrão de formação de um Token. Dentro da classe \verb Scanner existe
 		uma tabela que contem as palavras reservadas da linguagem.
 		
-	\subsection{A Estrutura do Projeto}
-		
-		O projeto segue a estrutura básica de todo projeto em C++, contendo uma pasta \textbf{include} e, dentro desta, separados por módulos, os headers (.h) com as declarações das classes. A pasta \textbf{src} contém a implementação das classes, bem como a função principal \textbf{main}:
-		
-		\begin{verbatim}
-			include/ -- Pasta para os headers
-			include/frontend -- pasta contendo as definições para os analisadores.
-			include/backend -- ainda por fazer.
-			include/test -- Pasta com os headers referentes aos testes unitários
-			src/ -- Implementação das classes
-			tests/ -- Pasta com a implementação dos testes unitários 
-		\end{verbatim}
+	
 		
 \section{Resultados dos testes}
 
