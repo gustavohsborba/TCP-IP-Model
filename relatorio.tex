@@ -185,13 +185,16 @@ eth0:   flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
 \end{lstlisting}  
         
 
-	\subsection{Finalmente, Executando o Programa}
-	    Em um terminal, entre na pasta test e execute o arquivo test.sh. Caso haja dúvidas sobre sua execução, execute o comando:
+	\subsection{Executando o Programa}
+	    Em um terminal, entre na pasta test e execute o arquivo test.sh. 
+\begin{lstlisting}
+./test.sh
+\end{lstlisting}
+	    Caso haja dúvidas sobre sua execução, execute o comando:
 	    
 \begin{lstlisting}
 ./test.sh -h
 \end{lstlisting}
-	
 	    Essa opção mostrará o menu de ajuda, que exibe todas as opções possíveis do arquivo test.sh
 	
 	
@@ -242,16 +245,21 @@ eth0:   flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
 		
 		Outros arquivos necessários para a execução - As páginas utilizadas pela aplicação - foram adicionados nas pastas usadas pela sua respectiva camada da pilha. Layouts para a aplicação Terminator foram criados para que se pudesse rodar o programa de diferentes formas: Como cliente, como servidor, como teste (abrindo na mesma máquina as camadas para as quatro camadas de cada pilha - totalizando oito terminais), etc.
 	
-	\subsection{A abordagem utilizada na implementação}
+	\subsection{Abordagem utilizada na implementação}
 		
-		O analisador léxico da foi implementado na classe \verb Scanner e analisa caractere por caractere do arquivo fonte
-		procurando casar os caracteres acumulados com o padrão de formação de um Token. Dentro da classe \verb Scanner existe
-		uma tabela que contem as palavras reservadas da linguagem.
+		A implementação deste trabalho, primeiramente, deu-se pelo uso de arquivos para escrever e ler as informações dos PDU's de cada camada. Sendo assim, cada camada lia o arquivo resultado da camada superior, fazia as respectivas análises e alterações que lhe competia e salvava estas em um novo arquivo para envio e uso da próxima camada. Neste ponto, cada camada precisava ser executada separadamente em um terminal independente.
 		
-	
+		Diante da crescente complexidade deste método de implementação, o uso de arquivos foi adaptado e passou-se a implementar a comunicação entre as camadas por meio de chamadas por linha de comando em bash. No entanto, esta abordagem não permitia a real análise da execução das camadas. Adicionalmente, a medida que as informações dos cabeçalhos dos PDU's eram passados para as camadas inferiores, a quantidade de parâmetros incrementava, ficando, assim, inviável.
 		
-\section{Resultados dos testes}
-
+		Ao ponto da implementação da camada de rede, constatou-se que a utilização de sockets era impressindivel. Deste modo, todas camadas realizavam suas comunicações por meio destes. A numeração das portas de cada socket foram determinadas a priori a execução, assim como os IP's de Localhost do cliente e servidor.
+		
+		Ainda persistia-se a necessidade de abrir um terminal para cada instância de uma camada, contabilizando, portanto, 8 terminais abertos um por um. Por sua vez, se uma camada fosse aberta fora de ordem, haveria problema de comunicação entre as portas de seus sockets e todo o processo precisava ser refeito. Logo, afim de simplificar a execução e torná-la praticável, utilizou-se o Terminator. Configurando os layouts deste terminator, foi possível abrir os 8 terminais na ordem correta em apenas uma instância.
+		
+		No âmbito de executar a simulação em sua plena definição primária, um script foi criado para que as máquinas cliente e servidora pudessem executar as próprias versões das camadas TCP. Como resultado, cada máquina continha uma instância do Terminator com quatro terminais. No cliente, o terminal referente à camada de aplicação demandava a inserção manual do IP da maquina servidora e da página que se deseja requerir; posteriormente, as camadas se comunivam e o conteudo da página era impresso no terminal ao final.
+		
+		Concomitantemente, para uma verdadeira experiência da camada de Aplicação, um mini-browser foi implementado em Scala para ser executado na área do cliente, de forma que o usuário pudesse utilizar de uma interface simplificada para realizar requisições de arquivos, como páginas html, por exemplo. Caso o arquivo requisitado não estivesse presente no diretório da servidora, uma página de erro 404 foi também criada como resposta ao erro.
+		
+		Por conseguinte, este trabalho pode ser executado em três diferentes situações: Uma única máquina (sendo cliente e servidor como localhost - chamada de "modo teste") e com duas máquinas (cliente e servidor), onde a simulacao pode ocorrer apenas pelas instâncias do Terminator ou Termiantor/Mini-browser.                        
 
 
 \end{document} 
